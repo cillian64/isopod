@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name "adafruit-tdk-icm-20948")(type "KiCad")(uri "${KIPRJMOD}/adafruit-tdk-icm-20948.pretty")(options "")(descr ""))
+  (lib (name "upu-max-m8c")(type "KiCad")(uri "${KIPRJMOD}/upu-max-m8c.pretty")(options "")(descr ""))
+)
