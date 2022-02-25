@@ -1,0 +1,3 @@
+[build]
+# Cross-compile for Raspberry Pi
+target = "armv7-unknown-linux-gnueabihf"

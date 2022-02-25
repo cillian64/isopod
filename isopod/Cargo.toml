@@ -1,0 +1,13 @@
+[package]
+name = "isopod"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rppal = { version = "0.13.1", features=["hal"] }
+anyhow = "1.0.55"
+icm20948 = "0.0.1"
+linux-embedded-hal = "0.3.2"
+nmea = "0.0.11"
