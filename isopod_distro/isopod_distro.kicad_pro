@@ -392,7 +392,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "isopod_distro.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""
