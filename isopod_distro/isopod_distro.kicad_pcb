@@ -178,7 +178,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/d5c459c9-9d6e-4eae-816f-63a1560a1c47")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J8" (at 2.1 -3.45) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 60e4dd98-210b-4c6d-a05b-6ec0e2242ab9)
@@ -390,7 +390,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/98dc3286-f72a-49fb-a1fa-741af929788d")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J23" (at 2.54 2.5) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp b0a0973f-40c2-4d3a-b6a2-b5b82e1eaf15)
@@ -456,7 +456,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/443ada23-f567-49db-bdcd-49d7775462be")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J15" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 57b0e4a7-0816-4232-83ad-9db92bafa258)
@@ -590,7 +590,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/075ca6f4-5701-4a99-abc6-ff6330607d27")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J30" (at 1.27 -2.33 90) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 4c516544-a53a-48f3-ae29-6e5455f8b1e6)
@@ -762,7 +762,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/62629d86-7812-48e5-a4ee-cba4cce675c7")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J11" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 54048a21-d316-444b-8dcf-50936f30f7d8)
@@ -828,7 +828,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/3768cce7-1e64-480e-bb38-0c6794a852ac")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J16" (at 2.5 -4) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 9db85383-a03f-4209-a928-87be53d1e345)
@@ -886,7 +886,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/4e2d44c4-2606-477f-bb48-d145485be406")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J14" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 1437cf69-ba02-4bd4-b13f-2f0e1f494f96)
@@ -994,7 +994,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/750da488-59d2-4b02-b63b-a8e58a408a5c")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J13" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 361107d8-eae8-4341-8a01-af3c6d324874)
@@ -1144,7 +1144,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/b982722b-1bf7-4726-a5b9-a2b33c43ad35")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J1" (at 2.5 -4) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 53972f30-0e63-44ba-8151-bc725f5d8800)
@@ -1244,7 +1244,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/806fcbcf-0bc8-4e5e-b0fe-3d628090b4ce")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J19" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 6cf35707-04d1-4735-b1ba-20d0ad5e20d3)
@@ -1352,7 +1352,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/35668956-6a7d-4a38-9ed8-69adb79d064b")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J2" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp d4beee8a-fda6-4644-a94b-f51a39e75e2f)
@@ -1502,7 +1502,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/f876229a-9be5-4298-979a-6d6fbc0d8d9f")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J25" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 0e246e37-a334-4cd4-842f-b29eaf99fb0a)
@@ -1716,7 +1716,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/d3b737ce-b873-4c30-ab89-933bad89c7de")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J4" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 81702a78-7d0f-4d80-a531-635ca2b9b5c4)
@@ -1824,7 +1824,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/b49a5aa0-cf9d-4ee1-afe1-cabd88baaa59")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J29" (at 3.75 -3.55 90) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp eae301ae-09a6-46dc-88c2-b1598ab926e1)
@@ -1895,7 +1895,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/4d4cd3fe-f7ba-4f94-8976-3f0dff10d8f8")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J17" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 54c8435a-0b4b-47ec-b2ba-919fa8bf92bd)
@@ -2003,7 +2003,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/f09b3e51-9fd8-4459-8d6f-45f5fc1fbce3")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J27" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 23808d9a-cef8-48d8-af56-d734474a56e6)
@@ -2069,7 +2069,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/7d01ca46-e5a0-42fe-8ec8-2a1135cf53a1")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J6" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp a48fcc31-4081-4256-bfee-e4e2825b8a2e)
@@ -2135,7 +2135,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/ef26b6e6-413c-4c93-bcaf-f610d4c0dd38")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J20" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp c41901fa-1220-42a8-b383-4fa632dcfa9d)
@@ -2243,7 +2243,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/a7e3df6d-7660-4452-a160-8a76822a0778")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J12" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 91de00b6-12c0-4824-92fe-5d53cfd996fe)
@@ -2309,7 +2309,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/a301302e-3956-45be-817d-57fb404606be")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J5" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp d3b90378-8614-4c96-a4f4-d65cbd7c44b7)
@@ -2427,7 +2427,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/6335d0a4-3503-455f-8a16-33bc2cc40641")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J10" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp c58f9b67-5e11-44bd-93bf-e50e28e8a3c9)
@@ -2556,7 +2556,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/fd3124aa-ad8a-43ba-a96b-670a2756f213")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J18" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 78480b16-929b-4eb3-af9a-f9852b270f2a)
@@ -2622,7 +2622,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/0322241e-c1f8-4e3d-b1ba-f4d61c1b7c3d")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J3" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp cec2c00d-b786-4841-9416-8e713ad0e1ca)
@@ -2688,7 +2688,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/a94bb0c3-ab8d-4cde-8a08-b4fe52e9e567")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J21" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp aebe486d-616c-45b7-8128-af0dd62185bf)
@@ -2828,7 +2828,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/9f439cf0-b325-44eb-b18c-771215c96ca4")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J22" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 3a6197fd-f476-46c1-83d4-8c519b23964d)
@@ -2936,7 +2936,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/55483b92-d84a-42dd-b194-5338cb499212")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J24" (at 2.54 2.5) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp eb376085-ea92-43a5-b5a1-562f73b2246c)
@@ -3112,7 +3112,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/7ccaf25c-326d-4a7b-8fa2-da0956225945")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J7" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 14507bca-4484-41d9-8d39-6f25bec1afb8)
@@ -3178,7 +3178,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/595dc79c-7f58-4eab-a8b2-40331690912b")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J26" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 8b6616a2-0807-4a73-984d-dccb6f37bc1c)
@@ -3370,7 +3370,7 @@
     (property "Sheetfile" "isopod_distro.kicad_sch")
     (property "Sheetname" "")
     (path "/1b961806-4b29-4a63-9497-0f477bb9b1a7")
-    (attr through_hole exclude_from_pos_files exclude_from_bom)
+    (attr through_hole)
     (fp_text reference "J28" (at 2.54 -4.12) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 587da108-bf60-4e29-a472-40640a8160e9)
