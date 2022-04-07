@@ -1,97 +1,53 @@
-use std::{thread, time};
-
-use rppal::gpio::Gpio;
-use rppal::i2c::I2c;
-
-use linux_embedded_hal as hal;
+//! Initialises and starts up worker threads to do the actual work.
 
 use anyhow::Result;
-
+use rppal::gpio::Gpio;
+use rppal::i2c::I2c;
 use std::fs::File;
-use std::io::{self, BufRead};
+use std::sync::Arc;
 
-use nmea::Nmea;
-
-/// Take a parsed NMEA packet from the NMEA library.  Print it if it contains
-/// useful info.  Return true if we printed anything, or false if it wasn't
-/// full.
-fn print_nmea_packet(packet: &Nmea) -> bool {
-    let time = match packet.fix_time {
-        Some(time) => time,
-        None => return false,
-    };
-    let longitude = match packet.longitude {
-        Some(long) => long,
-        None => return false,
-    };
-    let latitude = match packet.latitude {
-        Some(lat) => lat,
-        None => return false,
-    };
-    let altitude = match packet.altitude {
-        Some(alt) => alt,
-        None => return false,
-    };
-    let sats = match packet.satellites().len() {
-        0 => return false,
-        sats => sats,
-    };
-
-    println!(
-        "{} - {},{} altitude {}.  {} satellites",
-        time, latitude, longitude, altitude, sats,
-    );
-
-    true
-}
+mod gps;
+mod i2c;
+mod led;
 
 fn main() -> Result<()> {
     println!("Hello, world!");
 
+    println!("Setting up raw peripherals...");
     println!("Setting up GPIO...");
-    let _gpio = Gpio::new()?;
+    let gpio = Gpio::new()?;
     println!("Setting up I2C...");
-    let mut i2c = I2c::new()?;
+    let i2c = I2c::new()?;
+    println!("Setting up GPS...");
+    let file = File::open("/dev/ttyAMA0")?;
+    let reader = std::io::BufReader::new(file);
     println!("Peripherals initialised okay!");
 
-    println!("Testing I2C and IMU...");
-    let mut icm = icm20948::ICMI2C::<_, _, 0x69>::new(&mut i2c)?;
-    icm.init(&mut i2c, &mut hal::Delay).unwrap();
-    for _ in 0..3 {
-        let (xa, ya, za, xg, yg, zg) =
-            icm.scale_raw_accel_gyro(icm.get_values_accel_gyro(&mut i2c).unwrap());
-        println!(
-            "Sensed, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
-            xa, ya, za, xg, yg, zg
-        );
-        thread::sleep(time::Duration::from_secs(1));
-    }
-    println!("I2C and IMU ok!");
+    println!("Setting up peripheral controllers...");
+    println!("Setting up I2C peripherals controller...");
+    let i2cperiphs = Arc::new(i2c::I2cPeriphs::new(i2c));
+    println!("Setting up LED controller...");
+    let led = Arc::new(led::Led::new(gpio));
+    println!("Setting up GPS controller...");
+    let gps = Arc::new(gps::Gps::new(reader));
+    println!("Peripheral drivers initialised okay!");
 
-    println!("Testing GPS...");
-    let file = File::open("/dev/ttyAMA0")?;
-    let reader = io::BufReader::new(file);
-    let mut nmea = Nmea::new();
-    let mut lines_read = 0;
-    for line in reader.lines() {
-        let line = line?;
-        if line.trim().len() == 0 {
-            continue;
-        }
-        match nmea.parse(&line) {
-            Ok(_) => {
-                if print_nmea_packet(&nmea) {
-                    lines_read += 1;
-                    if lines_read >= 5 {
-                        break;
-                    }
-                }
-            }
-            Err(_) => continue, // Ignore malformed packets
-        };
-    }
-    println!("GPS ok.");
+    println!("Doing start-up tests...");
+    gps.test()?;
+    led.test()?;
+    i2cperiphs.test()?;
+    println!("Start-up tests look good!");
 
-    println!("Done.");
+    println!("Starting worker threads...");
+    led.clone().start_thread();
+    i2cperiphs.clone().start_thread();
+    gps.clone().start_thread();
+    println!("Worker threads started.");
+
+    // Check lifetime/ownership stuff is kinda working:
+    i2cperiphs.get();
+    led.set();
+    gps.get();
+
     Ok(())
 }
