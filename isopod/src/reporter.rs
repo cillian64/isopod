@@ -39,7 +39,7 @@ impl Reporter {
             // Ignore errors here, just try again next time.
             let datetime = fix.time.format("%Y-%m-%d %H:%M:%S").to_string();
             let _ = agent
-                .put("https://dwt27.co.uk/isopod")
+                .put("http://dwt27.co.uk:1309/isopod")
                 .send_json(ureq::json!({
                     "lat": fix.latitude,
                     "long": fix.longitude,
