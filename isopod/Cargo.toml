@@ -11,3 +11,6 @@ anyhow = "1.0.55"
 icm20948 = "0.0.1"
 linux-embedded-hal = "0.3.2"
 nmea = "0.0.11"
+rs_ws281x = { git = "https://github.com/rpi-ws281x/rpi-ws281x-rust.git" }
+ctrlc = "3.2.1"
+color_space = "0.5.3"

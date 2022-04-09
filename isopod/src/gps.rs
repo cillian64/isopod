@@ -6,6 +6,7 @@ use nmea::Nmea;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::sync::{Arc, Mutex};
+use std::{thread, time};
 
 /// Take a parsed NMEA packet from the NMEA library.  Print it if it contains
 /// useful info.  Return true if we printed anything, or false if it wasn't
@@ -106,12 +107,16 @@ impl Gps {
             let mut internal = self.internal.lock().unwrap();
             internal.thread_started = true;
         }
+
+        println!("GPS thread running.");
+
         loop {
-            unimplemented!();
+            thread::sleep(time::Duration::from_millis(10));
+            // TODO
         }
     }
 
     pub fn get(self: &Self) -> () {
-        unimplemented!();
+        // TODO
     }
 }

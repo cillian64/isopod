@@ -5,10 +5,16 @@ use rppal::gpio::Gpio;
 use rppal::i2c::I2c;
 use std::fs::File;
 use std::sync::Arc;
+use std::thread;
+use std::time;
 
 mod gps;
 mod i2c;
 mod led;
+
+// If bluetooth is enabled then the raspberry pi serial port is
+// /dev/ttyS0.  If bluetooth is disabled then /dev/ttyAMA0 is used.
+const SERIAL_PORT: &str = "/dev/ttyS0";
 
 fn main() -> Result<()> {
     println!("Hello, world!");
@@ -19,7 +25,7 @@ fn main() -> Result<()> {
     println!("Setting up I2C...");
     let i2c = I2c::new()?;
     println!("Setting up GPS...");
-    let file = File::open("/dev/ttyAMA0")?;
+    let file = File::open(SERIAL_PORT)?;
     let reader = std::io::BufReader::new(file);
     println!("Peripherals initialised okay!");
 
@@ -49,5 +55,9 @@ fn main() -> Result<()> {
     led.set();
     gps.get();
 
-    Ok(())
+    // Main application loop
+    loop {
+        thread::sleep(time::Duration::from_millis(10));
+        // TODO
+    }
 }

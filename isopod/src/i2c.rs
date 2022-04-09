@@ -62,12 +62,14 @@ impl I2cPeriphs {
             let mut internal = self.internal.lock().unwrap();
             internal.thread_started = true;
         }
+        println!("I2C thread running.");
         loop {
-            unimplemented!();
+            thread::sleep(time::Duration::from_millis(10));
+            // TODO
         }
     }
 
     pub fn get(self: &Self) {
-        unimplemented!();
+        // TODO
     }
 }
