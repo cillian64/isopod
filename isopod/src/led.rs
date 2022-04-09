@@ -5,6 +5,7 @@ use rppal::gpio::Gpio;
 use std::sync::{Arc, Mutex};
 use std::{thread, time};
 use rs_ws281x::{ControllerBuilder, ChannelBuilder, StripType, Controller};
+use color_space::{Rgb, Hsv};
 
 struct LedInternal {
     _gpio: Gpio,
@@ -53,7 +54,7 @@ impl Led {
                     .pin(12) // GPIO 12 = PWM0
                     .count(30) // Number of LEDs
                     .strip_type(StripType::Ws2812)
-                    .brightness(255) // default: 255
+                    .brightness(64) // default: 255
                     .build(),
             )
             .build()?;
@@ -64,9 +65,8 @@ impl Led {
 
         println!("LED thread running.");
 
+        let mut rainbow_offset: f64 = 0.0;
         loop {
-            thread::sleep(time::Duration::from_millis(10));
-
             // Exit handler:
             if rx.try_recv().is_ok() {
                 // Turn off LEDs then quit
@@ -74,6 +74,26 @@ impl Led {
                 Self::set_all_leds(&mut controller, [0, 0, 0, 0]);
                 std::process::exit(0);
             }
+
+            let leds = controller.leds_mut(0);
+            // Make a pretty rainbow
+            for i in 0..30 {
+                let mut hue = (i as f64) / 30.0 * 360.0 + rainbow_offset;
+                while hue >= 360.0 {
+                    hue -= 360.0;
+                }
+                let hsv = Hsv::new(hue, 1.0, 1.0);
+                let rgb = Rgb::from(hsv);
+                leds[i] = Self::rgb_to_led(rgb);
+            }
+            controller.render()?;
+
+            rainbow_offset += 1.0;
+            if rainbow_offset >= 360.0 {
+                rainbow_offset = 0.0;
+            }
+
+            thread::sleep(time::Duration::from_millis(10));
         }
     }
 
@@ -103,9 +123,9 @@ impl Led {
             .unwrap();
 
         Self::set_all_leds(&mut controller, [0, 0, 255, 0]); // red
-        thread::sleep(time::Duration::from_secs(1));
+        thread::sleep(time::Duration::from_millis(300));
         Self::set_all_leds(&mut controller, [0, 255, 0, 0]); // green
-        thread::sleep(time::Duration::from_secs(1));
+        thread::sleep(time::Duration::from_millis(300));
         Self::set_all_leds(&mut controller, [255, 0, 0, 0]); // blue
 
         println!("Finished testing WS2812b LED controller");
@@ -119,6 +139,13 @@ impl Led {
             *led = argb;
         }
         controller.render().unwrap();
+    }
+
+    fn rgb_to_led(rgb: Rgb) -> [u8; 4] {
+        [rgb.b as u8,
+         rgb.g as u8,
+         rgb.r as u8,
+         0]
     }
 
     pub fn set(self: &Self) -> () {
