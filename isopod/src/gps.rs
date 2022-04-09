@@ -7,11 +7,12 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::sync::{Arc, Mutex};
 use std::thread;
+use chrono::{DateTime, Utc};
 
 /// Take a parsed NMEA packet from the NMEA library.  Print it if it contains
 /// useful info.  Return true if we printed anything, or false if it wasn't
 /// full.
-pub fn print_nmea_packet(packet: &Nmea) -> bool {
+fn print_nmea_packet(packet: &Nmea) -> bool {
     let time = match packet.fix_time {
         Some(time) => time,
         None => return false,
@@ -41,11 +42,59 @@ pub fn print_nmea_packet(packet: &Nmea) -> bool {
     true
 }
 
+/// Take a parsed NMEA packet from the NMEA library.  If it contains a useful
+/// fix then return a Fix structure, otherwise return None.
+fn nmea_to_fix(packet: &Nmea) -> Option<Fix> {
+    let time = match packet.fix_time {
+        Some(time) => time,
+        None => return None,
+    };
+    let date = match packet.fix_date {
+        Some(date) => date,
+        None => return None,
+    };
+    let longitude = match packet.longitude {
+        Some(long) => long,
+        None => return None,
+    };
+    let latitude = match packet.latitude {
+        Some(lat) => lat,
+        None => return None,
+    };
+    let altitude = match packet.altitude {
+        Some(alt) => alt,
+        None => return None,
+    };
+    let satellites = match packet.satellites().len() {
+        0 => return None,
+        sats => sats,
+    };
+
+    let naive_date_time = chrono::NaiveDateTime::new(date, time);
+    let date_time = DateTime::from_utc(naive_date_time, chrono::Utc);
+
+    Some(Fix {
+        longitude,
+        latitude,
+        altitude,
+        satellites,
+        time: date_time,
+    })
+}
+
+/// Represents the data captured in a momentary GPS fix
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Fix {
+    pub longitude: f64,
+    pub latitude: f64,
+    pub altitude: f32,
+    pub satellites: usize,
+    pub time: DateTime<Utc>,
+}
+
 struct GpsInternal {
     thread_started: bool,
-    // TODO: store location
-    // TODO: store time of last fix
-    // TODO: Store number of satellites and location precision
+    last_fix: Option<Fix>,
 }
 
 pub struct Gps {
@@ -61,6 +110,7 @@ impl Gps {
             reader: Mutex::new(reader),
             internal: Mutex::new(GpsInternal {
                 thread_started: false,
+                last_fix: None,
             }),
         }
     }
@@ -126,15 +176,25 @@ impl Gps {
             if line_buf.trim().len() == 0 {
                 continue;
             }
-            // TODO: Don't print the NMEA packets, store location.
             match nmea.parse(&line_buf) {
-                Ok(_) => print_nmea_packet(&nmea),
+                Ok(_) => {
+                    match nmea_to_fix(&nmea) {
+                        Some(fix) => {
+                            let mut internal = self.internal.lock().unwrap();
+                            internal.last_fix = Some(fix);
+                        }
+                        None => {}
+                    }
+                }
                 Err(_) => continue, // Ignore malformed packets
             };
         }
     }
 
-    pub fn get(self: &Self) -> () {
-        // TODO
+    /// If the GPS has ever seen a fix during this execution, then return
+    /// details of that fix (which contains the date-time at which the fix
+    /// occurred).  Returns None if we have never seen a valid GPS fix.
+    pub fn get(self: &Self) -> Option<Fix> {
+        self.internal.lock().unwrap().last_fix
     }
 }

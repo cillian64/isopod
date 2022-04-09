@@ -71,11 +71,11 @@ impl I2cPeriphs {
         loop {
             let (xa, ya, za, xg, yg, zg) =
                 icm.scale_raw_accel_gyro(icm.get_values_accel_gyro(i2c.deref_mut()).unwrap());
-            println!(
-                "Sensed, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
-                xa, ya, za, xg, yg, zg
-            );
-            thread::sleep(time::Duration::from_millis(300));
+            // println!(
+            //     "Sensed, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
+            //     xa, ya, za, xg, yg, zg
+            // );
+            thread::sleep(time::Duration::from_millis(100));
         }
     }
 

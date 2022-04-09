@@ -11,6 +11,7 @@ use std::time;
 mod gps;
 mod i2c;
 mod led;
+mod reporter;
 
 // If bluetooth is enabled then the raspberry pi serial port is
 // /dev/ttyS0.  If bluetooth is disabled then /dev/ttyAMA0 is used.
@@ -48,16 +49,14 @@ fn main() -> Result<()> {
     led.clone().start_thread();
     i2cperiphs.clone().start_thread();
     gps.clone().start_thread();
+    let mut reporter = reporter::Reporter::new();
     println!("Worker threads started.");
-
-    // Check lifetime/ownership stuff is kinda working:
-    i2cperiphs.get();
-    led.set();
-    gps.get();
 
     // Main application loop
     loop {
-        thread::sleep(time::Duration::from_millis(10));
-        // TODO
+        // Every few seconds, send a report
+        thread::sleep(time::Duration::from_secs(10));
+        let fix = gps.get();
+        reporter.send(fix)?;
     }
 }

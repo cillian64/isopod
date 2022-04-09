@@ -14,3 +14,5 @@ nmea = "0.0.11"
 rs_ws281x = { git = "https://github.com/rpi-ws281x/rpi-ws281x-rust.git" }
 ctrlc = "3.2.1"
 color_space = "0.5.3"
+chrono = "0.4"
+ureq = { version = "2.4.0", features = ["json"]}
