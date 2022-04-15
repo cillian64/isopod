@@ -35,7 +35,7 @@ fn main() -> Result<()> {
     println!("Setting up I2C peripherals controller...");
     let i2cperiphs = Arc::new(i2c::I2cPeriphs::new(i2c));
     println!("Setting up LED controller...");
-    let led = Arc::new(led::Led::new(gpio));
+    let mut led = led::Led::new(gpio);
     println!("Setting up GPS controller...");
     let gps = Arc::new(gps::Gps::new(reader));
     println!("Peripheral drivers initialised okay!");
@@ -47,18 +47,38 @@ fn main() -> Result<()> {
     println!("Start-up tests look good!");
 
     println!("Starting worker threads...");
-    led.clone().start_thread();
+    led.start_thread();
     i2cperiphs.clone().start_thread();
     gps.clone().start_thread();
-    let mut reporter = reporter::Reporter::new();
-    ws_server::start_server();
+    let mut _reporter = reporter::Reporter::new();
+    let ws = ws_server::WsServer::start_server();
     println!("Worker threads started.");
 
     // Main application loop
+    //loop {
+    //    // Every few seconds, send a report
+    //    thread::sleep(time::Duration::from_secs(10));
+    //    let fix = gps.get();
+    //    reporter.send(fix)?;
+    //}
+
+    let mut led_state = led::LedUpdate {
+        spines: vec![vec![[0; 3]; 60]; 12],
+    };
+    let mut i = 0;
     loop {
-        // Every few seconds, send a report
-        thread::sleep(time::Duration::from_secs(10));
-        let fix = gps.get();
-        reporter.send(fix)?;
+        for spine in 0..12 {
+            for led in 0..60 {
+                led_state.spines[spine][led] = if (led + i) % 10 == 0 {
+                    [255, 0, 0]
+                } else {
+                    [0, 0, 0]
+                };
+            }
+        }
+        i = if i == 0 { 60 } else { i - 1 };
+        led.led_update(&led_state)?;
+        ws.led_update(&led_state)?;
+        thread::sleep(time::Duration::from_millis(1000 / 60));
     }
 }

@@ -2,17 +2,9 @@
 
 use anyhow::{anyhow, Result};
 use rppal::gpio::Gpio;
-use std::sync::{Arc, Mutex};
 use std::{thread, time};
 use rs_ws281x::{ControllerBuilder, ChannelBuilder, StripType, Controller};
-use color_space::{Rgb, Hsv};
-
-struct LedInternal {
-    _gpio: Gpio,
-    thread_started: bool,
-    // The colour of each LED on the spines
-    spines: Vec<Vec<[u8; 3]>>,
-}
+use std::sync::mpsc::{Sender, Receiver, channel};
 
 #[derive(Debug, Clone)]
 pub struct LedUpdate {
@@ -23,35 +15,39 @@ pub struct LedUpdate {
 /// switch master power to the LEDs and PWM to output data for the
 /// addressable LEDs.
 pub struct Led {
-    internal: Mutex<LedInternal>,
+    // These will be taken by the thread when it starts
+    gpio: Option<Gpio>,
+    rx: Option<Receiver<LedUpdate>>,
+
+    // This is left behind for the main thread
+    tx: Sender<LedUpdate>,
+
+    thread_started: bool,
 }
 
 impl Led {
     pub fn new(gpio: Gpio) -> Self {
+        let (tx, rx) = channel();
         Self {
-            internal: Mutex::new(LedInternal {
-                _gpio: gpio,
-                thread_started: false,
-                spines: vec![vec![[0, 0, 0]; 60]; 12],
-            }),
+            gpio: Some(gpio),
+            rx: Some(rx),
+            tx,
+            thread_started: false,
         }
     }
 
     /// Start up a new thread controlling this peripheral.
-    pub fn start_thread(self: Arc<Self>) -> () {
-        let thread_started = self.internal.lock().unwrap().thread_started;
-        if !thread_started {
-            thread::spawn(move || self.led_thread());
+    pub fn start_thread(self: &mut Self) -> () {
+        if !self.thread_started {
+            self.thread_started = true;
+            let gpio = self.gpio.take().unwrap();
+            let rx = self.rx.take().unwrap();
+            thread::spawn(move || Self::led_thread(gpio, rx));
         }
     }
 
     /// The main peripheral control thread
-    fn led_thread(self: &Self) -> Result<()> {
-        {
-            let mut internal = self.internal.lock().unwrap();
-            internal.thread_started = true;
-        }
-
+    fn led_thread(_gpio: Gpio, rx: Receiver<LedUpdate>) -> Result<()> {
         // Initialise WS2812b controller here because it's not Send+Sync.
         let mut controller = ControllerBuilder::new()
             .freq(800_000)
@@ -60,7 +56,7 @@ impl Led {
                 0, // Channel Index
                 ChannelBuilder::new()
                     .pin(12) // GPIO 12 = PWM0
-                    .count(30) // Number of LEDs
+                    .count(1440) // Number of LEDs
                     .strip_type(StripType::Ws2812)
                     .brightness(64) // default: 255
                     .build(),
@@ -68,47 +64,50 @@ impl Led {
             .build()?;
 
         // Setup a SIGTERM handler to turn off the LEDs before quitting
-        let (tx, rx) = std::sync::mpsc::channel();
-        ctrlc::set_handler(move || tx.send(()).unwrap())?;
+        let (sigterm_tx, sigterm_rx) = std::sync::mpsc::channel();
+        ctrlc::set_handler(move || sigterm_tx.send(()).unwrap())?;
 
         println!("LED thread running.");
 
-        let mut rainbow_offset: f64 = 0.0;
         loop {
             // Exit handler:
-            if rx.try_recv().is_ok() {
+            if sigterm_rx.try_recv().is_ok() {
                 // Turn off LEDs then quit
                 println!("LED thread handling SIGTERM.  Goodbye.");
                 Self::set_all_leds(&mut controller, [0, 0, 0, 0]);
                 std::process::exit(0);
             }
 
+            // Wait for an LED update
+            let led_update = rx.recv().unwrap();
+
+            // Now render the new LED state
             let leds = controller.leds_mut(0);
-            // Make a pretty rainbow
-            for i in 0..30 {
-                let mut hue = (i as f64) / 30.0 * 360.0 + rainbow_offset;
-                while hue >= 360.0 {
-                    hue -= 360.0;
+            for spine in 0..12 {
+                for led in 0..60 {
+                    // Leds are [B, G, R, W] ordering
+                    leds[spine * 120 + led] = [
+                        led_update.spines[spine][led][2],
+                        led_update.spines[spine][led][1],
+                        led_update.spines[spine][led][0],
+                        0,
+                    ];
+                    // Make the loopback LEDs mirrored
+                    leds[spine * 120 + 60 + 59 - led] = [
+                        led_update.spines[spine][led][2],
+                        led_update.spines[spine][led][1],
+                        led_update.spines[spine][led][0],
+                        0,
+                    ];
                 }
-                let hsv = Hsv::new(hue, 1.0, 1.0);
-                let rgb = Rgb::from(hsv);
-                leds[i] = Self::rgb_to_led(rgb);
             }
             controller.render()?;
-
-            rainbow_offset += 1.0;
-            if rainbow_offset >= 360.0 {
-                rainbow_offset = 0.0;
-            }
-
-            thread::sleep(time::Duration::from_millis(10));
         }
     }
 
     /// Perform a quick test of the peripheral.  Must be called before start_thread.
     pub fn test(&self) -> Result<()> {
-        let internal = self.internal.lock().unwrap();
-        if internal.thread_started {
+        if self.thread_started {
             return Err(anyhow!(
                 "Cannot perform test after peripheral thread is running."
             ));
@@ -149,14 +148,8 @@ impl Led {
         controller.render().unwrap();
     }
 
-    fn rgb_to_led(rgb: Rgb) -> [u8; 4] {
-        [rgb.b as u8,
-         rgb.g as u8,
-         rgb.r as u8,
-         0]
-    }
-
-    pub fn set(self: &Self, _leds: &LedUpdate) -> () {
-        // TODO
+    pub fn led_update(self: &Self, leds: &LedUpdate) -> Result<()> {
+        self.tx.send(leds.clone())?;
+        Ok(())
     }
 }
