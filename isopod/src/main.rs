@@ -12,6 +12,7 @@ mod gps;
 mod i2c;
 mod led;
 mod reporter;
+mod ws_server;
 
 // If bluetooth is enabled then the raspberry pi serial port is
 // /dev/ttyS0.  If bluetooth is disabled then /dev/ttyAMA0 is used.
@@ -50,6 +51,7 @@ fn main() -> Result<()> {
     i2cperiphs.clone().start_thread();
     gps.clone().start_thread();
     let mut reporter = reporter::Reporter::new();
+    ws_server::start_server();
     println!("Worker threads started.");
 
     // Main application loop

@@ -10,6 +10,13 @@ use color_space::{Rgb, Hsv};
 struct LedInternal {
     _gpio: Gpio,
     thread_started: bool,
+    // The colour of each LED on the spines
+    spines: Vec<Vec<[u8; 3]>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct LedUpdate {
+    pub spines: Vec<Vec<[u8; 3]>>,
 }
 
 /// Abstraction for the LED peripheral control, including use of GPIO to
@@ -25,6 +32,7 @@ impl Led {
             internal: Mutex::new(LedInternal {
                 _gpio: gpio,
                 thread_started: false,
+                spines: vec![vec![[0, 0, 0]; 60]; 12],
             }),
         }
     }
@@ -148,7 +156,7 @@ impl Led {
          0]
     }
 
-    pub fn set(self: &Self) -> () {
+    pub fn set(self: &Self, _leds: &LedUpdate) -> () {
         // TODO
     }
 }
