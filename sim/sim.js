@@ -53,7 +53,7 @@ function init_scene() {
     var pole_geo = new THREE.CylinderGeometry(.005, .005, 1.1);
     var pole_mat = new THREE.MeshLambertMaterial({
         color: 0x666666,
-        emissive: 0x666666,
+        emissive: 0x333333,
         emissiveIntensity: 1,
     });
 
@@ -67,7 +67,7 @@ function init_scene() {
     centre.position.set(0, 0, 1.1);
     scene.add(centre);
 
-    var led_geo = new THREE.SphereGeometry(0.01, 8, 8);
+    var led_geo = new THREE.SphereGeometry(0.007, 8, 8);
     var led_mat = new THREE.MeshLambertMaterial({
         color: 0x666666,
         emissive: 0xFFFFFF,
@@ -132,10 +132,11 @@ function init_scene() {
 
 function set_led(spine_num, led_num, data) {
     var spine = spines[spine_num];
+    var led = spine.leds[led_num];
     var light = spine.children[0];
     var color = new THREE.Color(data[0]/255, data[1]/255, data[2]/255);
-    spine.material.emissive.setHex(color.getHex());
-    light.color.setHex(color.getHex());
+    led.material.emissive.setHex(color.getHex());
+    //light.color.setHex(color.getHex());
 }
 
 function on_window_resize(event) {
@@ -174,10 +175,12 @@ function render() {
 function update() {
 }
 
+// const path = "ws://" + window.location.host + "/ws";
+const ws_path = "ws://127.0.0.1:3030/ws";
+
 var ws;
 function init_ws() {
-    var path = "ws://" + window.location.host + "/ws";
-    ws = new WebSocket(path);
+    ws = new WebSocket(ws_path);
     ws.onclose = retry_ws;
     ws.onerror = retry_ws;
     ws.onmessage = handle_ws;
@@ -187,11 +190,10 @@ function handle_ws(event) {
     var status = document.getElementById('status');
     status.style.color = 'green';
     status.innerHTML = 'Connected';
-    var spineData = JSON.parse(event.data);
-    for(var i = 0; i < 12; i++) { // spine
-        for(var j = 0; j < 60; j++) { // led
-            var pole = spineData[i][j];
-            set_spine(i, j, pole);
+    var spineData = JSON.parse(event.data).spines;
+    for(var spine = 0; spine < 12; spine++) { // spine
+        for(var led = 0; led < 60; led++) { // led
+            set_led(spine, led, spineData[spine][led]);
         }
     }
 }
@@ -202,8 +204,7 @@ function retry_ws() {
     status.style.color = 'red';
     status.innerHTML = 'Disconnected';
     window.setTimeout(function() {
-        var path = "ws://" + window.location.host + "/ws";
-        ws = new WebSocket(path);
+        ws = new WebSocket(ws_path);
         ws.onclose = retry_ws;
         ws.onmessage = handle_ws;
     }, 1000);
