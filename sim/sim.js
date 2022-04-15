@@ -1,4 +1,15 @@
 var scene, camera, renderer, clock, controls, composer, listener;
+
+var spines;
+
+// Camera presets:
+const camera1_pos = [0.8, -1.5, 2];
+const camera1_target = {x: 0, y: 0, z: 1};
+const camera2_pos = [0, -3, 1.8];
+const camera2_target = {x: 0, y: 0, z: 1};
+const camera3_pos = [0, 0, 5];
+const camera3_target = {x: 0, y: 0, z: 0};
+
 function init_world() {
     scene = new THREE.Scene();
 
@@ -8,8 +19,8 @@ function init_world() {
 
     camera = new THREE.PerspectiveCamera(
         75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0.8, -14, 5);
-    camera.lookAt({x: 0.8, y: 0, z: 0});
+    camera.position.set(camera1_pos[0], camera1_pos[1], camera1_pos[2]);
+    camera.lookAt(camera1_target);
 
     listener = new THREE.AudioListener();
     camera.add(listener);
@@ -34,7 +45,6 @@ function init_world() {
     document.body.appendChild(renderer.domElement);
 }
 
-var spines;
 function init_scene() {
     var alight = new THREE.AmbientLight(0x101010);
     scene.add(alight);
@@ -149,21 +159,17 @@ function on_window_resize(event) {
 function on_keypress(event) {
     var code = event.code;
     if(code == "Digit1") {
-        camera.position.set(0.8, -14, 5);
-        camera.lookAt({x: 0.8, y: 0, z: 0});
+        camera_pos = camera1_pos;
+        camera_target = camera1_target;
     } else if(code == "Digit2") {
-        camera.position.set(0, -12, 1.8);
-        camera.lookAt({x: 0, y: 0, z: 1.8});
+        camera_pos = camera2_pos;
+        camera_target = camera2_target;
     } else if(code == "Digit3") {
-        camera.position.set(0, 0, 12);
-        camera.lookAt({x: 0, y: 0, z: 0});
-    } else if(code == "KeyM") {
-        if(listener.getMasterVolume() > 0) {
-            listener.setMasterVolume(0);
-        } else {
-            listener.setMasterVolume(1);
-        }
+        camera_pos = camera3_pos;
+        camera_target = camera3_target;
     }
+    camera.position.set(camera_pos[0], camera_pos[1], camera_pos[2]);
+    camera.lookAt(camera_target);
 }
 
 function render() {
