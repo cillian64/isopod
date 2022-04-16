@@ -1,10 +1,10 @@
 //! Reports location and other information to the backend server
 
-use std::thread;
-use std::sync::mpsc;
 use anyhow::Result;
-use ureq::Agent;
+use std::sync::mpsc;
+use std::thread;
 use std::time::Duration;
+use ureq::Agent;
 
 use crate::gps::GpsFix;
 
@@ -16,9 +16,7 @@ impl Reporter {
     pub fn new() -> Self {
         let (tx, rx) = mpsc::channel();
         thread::spawn(move || Self::reporter_thread(rx));
-        Self {
-            tx,
-        }
+        Self { tx }
     }
 
     fn reporter_thread(rx: mpsc::Receiver<Option<GpsFix>>) -> ! {
@@ -52,7 +50,8 @@ impl Reporter {
         }
     }
 
-    pub fn send(self: &mut Self, fix: Option<GpsFix>) -> Result<()> {
+    #[allow(dead_code)]
+    pub fn send(&mut self, fix: Option<GpsFix>) -> Result<()> {
         self.tx.send(fix)?;
         Ok(())
     }

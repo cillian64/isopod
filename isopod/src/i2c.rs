@@ -4,9 +4,9 @@
 use anyhow::{anyhow, Result};
 use linux_embedded_hal as hal;
 use rppal::i2c::I2c;
+use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 use std::{thread, time};
-use std::ops::DerefMut;
 
 struct I2cPeriphsInternal {
     thread_started: bool,
@@ -59,7 +59,8 @@ impl I2cPeriphs {
         }
     }
 
-    pub fn test(self: &Self) -> Result<()> {
+    #[allow(dead_code)]
+    pub fn test(&self) -> Result<()> {
         if self.internal.lock().unwrap().thread_started {
             return Err(anyhow!(
                 "Cannot perform test after peripheral thread is running."
@@ -89,7 +90,7 @@ impl I2cPeriphs {
         }
     }
 
-    fn i2c_thread(self: &Self) -> ! {
+    fn i2c_thread(&self) -> ! {
         {
             let mut internal = self.internal.lock().unwrap();
             internal.thread_started = true;

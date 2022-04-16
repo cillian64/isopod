@@ -1,7 +1,7 @@
-use crate::patterns::Pattern;
-use crate::led::LedUpdate;
 use crate::gps::GpsFix;
 use crate::i2c::ImuReadings;
+use crate::led::LedUpdate;
+use crate::patterns::Pattern;
 
 pub struct Zoom {
     leds: LedUpdate,
@@ -11,7 +11,9 @@ pub struct Zoom {
 impl Pattern for Zoom {
     fn new() -> Self {
         Self {
-            leds: LedUpdate { spines: vec![vec![[0; 3]; 60]; 12] },
+            leds: LedUpdate {
+                spines: vec![vec![[0; 3]; 60]; 12],
+            },
             i: 0,
         }
     }

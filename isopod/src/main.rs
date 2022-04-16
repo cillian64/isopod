@@ -11,9 +11,9 @@ use std::time;
 mod gps;
 mod i2c;
 mod led;
+mod patterns;
 mod reporter;
 mod ws_server;
-mod patterns;
 
 use patterns::Pattern;
 

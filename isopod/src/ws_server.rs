@@ -1,11 +1,11 @@
-use warp::{Filter, ws::WebSocket};
+use crate::led::LedUpdate;
+use anyhow::Result;
 use futures_util::SinkExt;
 use serde::Serialize;
-use tokio::sync::broadcast;
-use tokio::sync::broadcast::{Sender, Receiver};
-use crate::led::LedUpdate;
 use std::sync::{Arc, Mutex};
-use anyhow::Result;
+use tokio::sync::broadcast;
+use tokio::sync::broadcast::{Receiver, Sender};
+use warp::{ws::WebSocket, Filter};
 
 /// The packet format we send to the websocket client
 #[derive(Serialize, Clone)]
@@ -29,34 +29,30 @@ impl WsServer {
         let wrapped_tx_filter = warp::any().map(move || wrapped_tx2.clone());
 
         std::thread::spawn(move || {
-            let routes = warp::path("ws")
-                .and(warp::ws())
-                .and(wrapped_tx_filter)
-                .map(|ws: warp::ws::Ws, tx: Arc<Mutex<Sender<LedUpdate>>>| {
-                     ws.on_upgrade(move |socket| {
-                         user_connected(socket, tx.lock().unwrap().subscribe())
-                     })
-                });
+            let routes = warp::path("ws").and(warp::ws()).and(wrapped_tx_filter).map(
+                |ws: warp::ws::Ws, tx: Arc<Mutex<Sender<LedUpdate>>>| {
+                    ws.on_upgrade(move |socket| {
+                        user_connected(socket, tx.lock().unwrap().subscribe())
+                    })
+                },
+            );
 
             println!("Starting websocket listener...");
             let future = async move {
                 warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
             };
-            tokio::runtime::Runtime::new()
-                .unwrap()
-                .block_on(future);
+            tokio::runtime::Runtime::new().unwrap().block_on(future);
         });
         Self { tx: wrapped_tx }
     }
 
-    pub fn led_update(self: &Self, leds: &LedUpdate) -> Result<()> {
+    pub fn led_update(&self, leds: &LedUpdate) -> Result<()> {
         // We mysteriously get channel closed errors occasionally.  Not sure
         // why, so just ignore any errors sending into the channel.
         let _res = self.tx.lock().unwrap().send(leds.clone());
         Ok(())
     }
 }
-
 
 async fn user_connected(mut ws: WebSocket, mut rx: Receiver<LedUpdate>) {
     println!("Websocket connected.");
@@ -66,16 +62,21 @@ async fn user_connected(mut ws: WebSocket, mut rx: Receiver<LedUpdate>) {
         let led_update = rx.recv().await.unwrap();
 
         // Build packet
-        let packet = SimPacket { spines: led_update.spines };
+        let packet = SimPacket {
+            spines: led_update.spines,
+        };
         // TODO: JSONifying the LED state at 60fps takes about 60% of a
         // raspberry pi 3 core.  Is there a more computationally efficient
         // way to send this data to the visualiser frontend?
+        // TODO: If CPU usage becomes a problem with lots of visualiser
+        // clients connected then do the JSON serialisation in led_update()
+        // so we can just spit out the same JSON string to each client
         let packet_json = serde_json::to_string(&packet).unwrap();
         let message = warp::ws::Message::text(&packet_json);
 
         // Send the WS packet to the client
         match ws.send(message).await {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(_) => {
                 println!("Websocket disconnected.");
                 break;

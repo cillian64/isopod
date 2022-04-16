@@ -2,9 +2,9 @@
 
 use anyhow::{anyhow, Result};
 use rppal::gpio::Gpio;
+use rs_ws281x::{ChannelBuilder, Controller, ControllerBuilder, StripType};
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::{thread, time};
-use rs_ws281x::{ControllerBuilder, ChannelBuilder, StripType, Controller};
-use std::sync::mpsc::{Sender, Receiver, channel};
 
 #[derive(Debug, Clone)]
 pub struct LedUpdate {
@@ -37,7 +37,7 @@ impl Led {
     }
 
     /// Start up a new thread controlling this peripheral.
-    pub fn start_thread(self: &mut Self) -> () {
+    pub fn start_thread(&mut self) {
         if !self.thread_started {
             self.thread_started = true;
             let gpio = self.gpio.take().unwrap();
@@ -106,6 +106,7 @@ impl Led {
     }
 
     /// Perform a quick test of the peripheral.  Must be called before start_thread.
+    #[allow(dead_code)]
     pub fn test(&self) -> Result<()> {
         if self.thread_started {
             return Err(anyhow!(
@@ -148,7 +149,7 @@ impl Led {
         controller.render().unwrap();
     }
 
-    pub fn led_update(self: &Self, leds: &LedUpdate) -> Result<()> {
+    pub fn led_update(&self, leds: &LedUpdate) -> Result<()> {
         self.tx.send(leds.clone())?;
         Ok(())
     }

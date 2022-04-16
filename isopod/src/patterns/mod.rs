@@ -1,6 +1,6 @@
-use crate::led::LedUpdate;
 use crate::gps::GpsFix;
 use crate::i2c::ImuReadings;
+use crate::led::LedUpdate;
 
 pub mod zoom;
 
