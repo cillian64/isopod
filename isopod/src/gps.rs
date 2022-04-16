@@ -85,10 +85,15 @@ fn nmea_to_fix(packet: &Nmea) -> Option<GpsFix> {
 /// Represents the data captured in a momentary GPS fix
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct GpsFix {
+    /// Longitude of the fix location in signed decimal degrees
     pub longitude: f64,
+    /// Latitude of the fix location in signed decimal degrees
     pub latitude: f64,
+    /// Altitude of the fix location in metres
     pub altitude: f32,
+    /// The number of satellites in view at the time of the fix
     pub satellites: usize,
+    /// The time, in UTC, of the fix
     pub time: DateTime<Utc>,
 }
 

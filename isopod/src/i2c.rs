@@ -20,11 +20,11 @@ pub struct I2cPeriphs {
 /// Represents the sensor data captured from the IMU at a given instant
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ImuReadings {
-    /// Accelerometer X-axis reading
+    /// Accelerometer X-axis reading in m/s/s
     pub xa: f32,
-    /// Accelerometer Y-axis reading
+    /// Accelerometer Y-axis reading in m/s/s
     pub ya: f32,
-    /// Accelerometer Z-axis reading
+    /// Accelerometer Z-axis reading in m/s/s
     pub za: f32,
 
     /// Gyroscope X-axis reading
