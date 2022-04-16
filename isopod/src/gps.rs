@@ -43,8 +43,8 @@ fn print_nmea_packet(packet: &Nmea) -> bool {
 }
 
 /// Take a parsed NMEA packet from the NMEA library.  If it contains a useful
-/// fix then return a Fix structure, otherwise return None.
-fn nmea_to_fix(packet: &Nmea) -> Option<Fix> {
+/// fix then return a GpsFix structure, otherwise return None.
+fn nmea_to_fix(packet: &Nmea) -> Option<GpsFix> {
     let time = match packet.fix_time {
         Some(time) => time,
         None => return None,
@@ -73,7 +73,7 @@ fn nmea_to_fix(packet: &Nmea) -> Option<Fix> {
     let naive_date_time = chrono::NaiveDateTime::new(date, time);
     let date_time = DateTime::from_utc(naive_date_time, chrono::Utc);
 
-    Some(Fix {
+    Some(GpsFix {
         longitude,
         latitude,
         altitude,
@@ -84,7 +84,7 @@ fn nmea_to_fix(packet: &Nmea) -> Option<Fix> {
 
 /// Represents the data captured in a momentary GPS fix
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Fix {
+pub struct GpsFix {
     pub longitude: f64,
     pub latitude: f64,
     pub altitude: f32,
@@ -94,7 +94,7 @@ pub struct Fix {
 
 struct GpsInternal {
     thread_started: bool,
-    last_fix: Option<Fix>,
+    last_fix: Option<GpsFix>,
 }
 
 pub struct Gps {
@@ -194,7 +194,7 @@ impl Gps {
     /// If the GPS has ever seen a fix during this execution, then return
     /// details of that fix (which contains the date-time at which the fix
     /// occurred).  Returns None if we have never seen a valid GPS fix.
-    pub fn get(self: &Self) -> Option<Fix> {
+    pub fn get(self: &Self) -> Option<GpsFix> {
         self.internal.lock().unwrap().last_fix
     }
 }

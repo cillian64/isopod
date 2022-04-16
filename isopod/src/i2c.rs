@@ -17,6 +17,24 @@ pub struct I2cPeriphs {
     internal: Mutex<I2cPeriphsInternal>,
 }
 
+/// Represents the sensor data captured from the IMU at a given instant
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ImuReadings {
+    /// Accelerometer X-axis reading
+    pub xa: f32,
+    /// Accelerometer Y-axis reading
+    pub ya: f32,
+    /// Accelerometer Z-axis reading
+    pub za: f32,
+
+    /// Gyroscope X-axis reading
+    pub xg: f32,
+    /// Gyroscope Y-axis reading
+    pub yg: f32,
+    /// Gyroscope Z-axis reading
+    pub zg: f32,
+}
+
 impl I2cPeriphs {
     pub fn new(i2c: I2c) -> Self {
         Self {
@@ -79,7 +97,15 @@ impl I2cPeriphs {
         }
     }
 
-    pub fn get(self: &Self) {
-        // TODO
+    pub fn get(&self) -> ImuReadings {
+        // TODO!!
+        ImuReadings {
+            xa: 0.0,
+            ya: 0.0,
+            za: 0.0,
+            xg: 0.0,
+            yg: 0.0,
+            zg: 0.0,
+        }
     }
 }

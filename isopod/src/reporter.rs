@@ -6,10 +6,10 @@ use anyhow::Result;
 use ureq::Agent;
 use std::time::Duration;
 
-use crate::gps::Fix;
+use crate::gps::GpsFix;
 
 pub struct Reporter {
-    tx: mpsc::Sender<Option<Fix>>,
+    tx: mpsc::Sender<Option<GpsFix>>,
 }
 
 impl Reporter {
@@ -21,7 +21,7 @@ impl Reporter {
         }
     }
 
-    fn reporter_thread(rx: mpsc::Receiver<Option<Fix>>) -> ! {
+    fn reporter_thread(rx: mpsc::Receiver<Option<GpsFix>>) -> ! {
         let agent: Agent = ureq::AgentBuilder::new()
             .timeout_read(Duration::from_secs(5))
             .timeout_write(Duration::from_secs(5))
@@ -52,7 +52,7 @@ impl Reporter {
         }
     }
 
-    pub fn send(self: &mut Self, fix: Option<Fix>) -> Result<()> {
+    pub fn send(self: &mut Self, fix: Option<GpsFix>) -> Result<()> {
         self.tx.send(fix)?;
         Ok(())
     }

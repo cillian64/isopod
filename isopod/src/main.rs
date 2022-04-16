@@ -13,6 +13,9 @@ mod i2c;
 mod led;
 mod reporter;
 mod ws_server;
+mod patterns;
+
+use patterns::Pattern;
 
 // If bluetooth is enabled then the raspberry pi serial port is
 // /dev/ttyS0.  If bluetooth is disabled then /dev/ttyAMA0 is used.
@@ -62,23 +65,14 @@ fn main() -> Result<()> {
     //    reporter.send(fix)?;
     //}
 
-    let mut led_state = led::LedUpdate {
-        spines: vec![vec![[0; 3]; 60]; 12],
-    };
-    let mut i = 0;
+    let mut zoomer = patterns::zoom::Zoom::new();
     loop {
-        for spine in 0..12 {
-            for led in 0..60 {
-                led_state.spines[spine][led] = if (led + i) % 10 == 0 {
-                    [255, 0, 0]
-                } else {
-                    [0, 0, 0]
-                };
-            }
-        }
-        i = if i == 0 { 60 } else { i - 1 };
-        led.led_update(&led_state)?;
-        ws.led_update(&led_state)?;
+        let gps_fix = gps.get();
+        let imu_readings = i2cperiphs.get();
+
+        let led_state = zoomer.step(&gps_fix, &imu_readings);
+        led.led_update(led_state)?;
+        ws.led_update(led_state)?;
         thread::sleep(time::Duration::from_millis(1000 / 60));
     }
 }
