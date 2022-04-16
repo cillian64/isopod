@@ -30,12 +30,9 @@ impl WsServer {
 
         std::thread::spawn(move || {
             let routes = warp::path("ws")
-                // The `ws()` filter will prepare the Websocket handshake.
                 .and(warp::ws())
                 .and(wrapped_tx_filter)
                 .map(|ws: warp::ws::Ws, tx: Arc<Mutex<Sender<LedUpdate>>>| {
-                    println!("Got connection to WS route, trying to upgrade...");
-                    // And then our closure will be called when it completes...
                      ws.on_upgrade(move |socket| {
                          user_connected(socket, tx.lock().unwrap().subscribe())
                      })
@@ -53,14 +50,16 @@ impl WsServer {
     }
 
     pub fn led_update(self: &Self, leds: &LedUpdate) -> Result<()> {
-        self.tx.lock().unwrap().send(leds.clone())?;
+        // We mysteriously get channel closed errors occasionally.  Not sure
+        // why, so just ignore any errors sending into the channel.
+        let _res = self.tx.lock().unwrap().send(leds.clone());
         Ok(())
     }
 }
 
 
 async fn user_connected(mut ws: WebSocket, mut rx: Receiver<LedUpdate>) {
-    println!("New user connected.");
+    println!("Websocket connected.");
 
     loop {
         // Wait for an LED state update.
@@ -68,6 +67,9 @@ async fn user_connected(mut ws: WebSocket, mut rx: Receiver<LedUpdate>) {
 
         // Build packet
         let packet = SimPacket { spines: led_update.spines };
+        // TODO: JSONifying the LED state at 60fps takes about 60% of a
+        // raspberry pi 3 core.  Is there a more computationally efficient
+        // way to send this data to the visualiser frontend?
         let packet_json = serde_json::to_string(&packet).unwrap();
         let message = warp::ws::Message::text(&packet_json);
 
@@ -75,7 +77,7 @@ async fn user_connected(mut ws: WebSocket, mut rx: Receiver<LedUpdate>) {
         match ws.send(message).await {
             Ok(_) => {},
             Err(_) => {
-                println!("Client disconnected.");
+                println!("Websocket disconnected.");
                 break;
             }
         };

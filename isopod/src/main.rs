@@ -40,11 +40,11 @@ fn main() -> Result<()> {
     let gps = Arc::new(gps::Gps::new(reader));
     println!("Peripheral drivers initialised okay!");
 
-    println!("Doing start-up tests...");
-    gps.test()?;
-    led.test()?;
-    i2cperiphs.test()?;
-    println!("Start-up tests look good!");
+    // println!("Doing start-up tests...");
+    // gps.test()?;
+    // led.test()?;
+    // i2cperiphs.test()?;
+    // println!("Start-up tests look good!");
 
     println!("Starting worker threads...");
     led.start_thread();

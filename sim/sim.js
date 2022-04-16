@@ -2,6 +2,11 @@ var scene, camera, renderer, clock, controls, composer, listener;
 
 var spines;
 
+// const path = "ws://" + window.location.host + "/ws";
+// const ws_path = "ws://127.0.0.1:3030/ws";
+const ws_path = "ws://beacon:3030/ws";
+
+
 // Camera presets:
 const camera1_pos = [0.8, -1.5, 2];
 const camera1_target = {x: 0, y: 0, z: 1};
@@ -180,9 +185,6 @@ function render() {
 
 function update() {
 }
-
-// const path = "ws://" + window.location.host + "/ws";
-const ws_path = "ws://127.0.0.1:3030/ws";
 
 var ws;
 function init_ws() {
