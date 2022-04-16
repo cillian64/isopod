@@ -10,10 +10,16 @@ use std::ops::DerefMut;
 
 struct I2cPeriphsInternal {
     thread_started: bool,
+    imu: ImuReadings,
 }
 
 pub struct I2cPeriphs {
+    // Held in a separate mutex because the i2c thread will need to hold it
+    // constantly
     i2c: Mutex<I2c>,
+
+    // Mainly used to get readings from the sensor reading thread to the main
+    // thread.
     internal: Mutex<I2cPeriphsInternal>,
 }
 
@@ -41,6 +47,14 @@ impl I2cPeriphs {
             i2c: Mutex::new(i2c),
             internal: Mutex::new(I2cPeriphsInternal {
                 thread_started: false,
+                imu: ImuReadings {
+                    xa: 0.0,
+                    ya: 0.0,
+                    za: 0.0,
+                    xg: 0.0,
+                    yg: 0.0,
+                    zg: 0.0,
+                },
             }),
         }
     }
@@ -89,6 +103,14 @@ impl I2cPeriphs {
         loop {
             let (xa, ya, za, xg, yg, zg) =
                 icm.scale_raw_accel_gyro(icm.get_values_accel_gyro(i2c.deref_mut()).unwrap());
+            self.internal.lock().unwrap().imu = ImuReadings {
+                xa,
+                ya,
+                za,
+                xg,
+                yg,
+                zg,
+            };
             // println!(
             //     "Sensed, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
             //     xa, ya, za, xg, yg, zg
@@ -98,14 +120,6 @@ impl I2cPeriphs {
     }
 
     pub fn get(&self) -> ImuReadings {
-        // TODO!!
-        ImuReadings {
-            xa: 0.0,
-            ya: 0.0,
-            za: 0.0,
-            xg: 0.0,
-            yg: 0.0,
-            zg: 0.0,
-        }
+        self.internal.lock().unwrap().imu
     }
 }
