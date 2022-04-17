@@ -3,6 +3,7 @@ use crate::i2c::ImuReadings;
 use crate::led::LedUpdate;
 
 pub mod zoom;
+pub mod shock;
 
 /// Interface used for creating patterns, either stationary or in motion
 pub trait Pattern {

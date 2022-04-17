@@ -1,3 +1,6 @@
+//! Basic demonstrator pattern - points of light zoom from the cenre to the
+//! outer edge of the spines.
+
 use crate::gps::GpsFix;
 use crate::i2c::ImuReadings;
 use crate::led::LedUpdate;

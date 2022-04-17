@@ -102,20 +102,28 @@ impl I2cPeriphs {
         icm.init(i2c.deref_mut(), &mut hal::Delay).unwrap();
 
         loop {
-            let (xa, ya, za, xg, yg, zg) =
-                icm.scale_raw_accel_gyro(icm.get_values_accel_gyro(i2c.deref_mut()).unwrap());
-            self.internal.lock().unwrap().imu = ImuReadings {
-                xa,
-                ya,
-                za,
-                xg,
-                yg,
-                zg,
+            // Try to get some new readings from the IMU.  If we succeed, then
+            // convert them to SI units and store them.  If we fail to get new
+            // readings then just try again next time.  In prototyping this can
+            // happen if the bodge-wires lose contact.
+            match icm.get_values_accel_gyro(i2c.deref_mut()) {
+                Ok(raw) => {
+                    let (xa, ya, za, xg, yg, zg) = icm.scale_raw_accel_gyro(raw);
+                    self.internal.lock().unwrap().imu = ImuReadings {
+                        xa,
+                        ya,
+                        za,
+                        xg,
+                        yg,
+                        zg,
+                    };
+                    // println!(
+                    //     "Sensed, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
+                    //     xa, ya, za, xg, yg, zg
+                    // );
+                }
+                Err(_) => { }
             };
-            // println!(
-            //     "Sensed, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
-            //     xa, ya, za, xg, yg, zg
-            // );
             thread::sleep(time::Duration::from_millis(100));
         }
     }
