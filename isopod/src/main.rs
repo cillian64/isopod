@@ -65,12 +65,13 @@ fn main() -> Result<()> {
     //    reporter.send(fix)?;
     //}
 
-    let mut zoomer = patterns::zoom::Zoom::new();
+//    let mut pattern = patterns::shock::Shock::new();
+    let mut pattern = patterns::zoom::Zoom::new();
     loop {
         let gps_fix = gps.get();
         let imu_readings = i2cperiphs.get();
 
-        let led_state = zoomer.step(&gps_fix, &imu_readings);
+        let led_state = pattern.step(&gps_fix, &imu_readings);
         led.led_update(led_state)?;
         ws.led_update(led_state)?;
         thread::sleep(time::Duration::from_millis(1000 / 60));

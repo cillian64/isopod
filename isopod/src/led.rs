@@ -56,9 +56,18 @@ impl Led {
                 0, // Channel Index
                 ChannelBuilder::new()
                     .pin(12) // GPIO 12 = PWM0
-                    .count(1440) // Number of LEDs
+                    .count(360) // Number of LEDs
                     .strip_type(StripType::Ws2812)
-                    .brightness(64) // default: 255
+                    .brightness(128) // default: 255
+                    .build(),
+            )
+            .channel(
+                1, // Channel Index
+                ChannelBuilder::new()
+                    .pin(13) // GPIO 13 = PWM1
+                    .count(360) // Number of LEDs
+                    .strip_type(StripType::Ws2812)
+                    .brightness(128) // default: 255
                     .build(),
             )
             .build()?;
@@ -78,22 +87,35 @@ impl Led {
                 std::process::exit(0);
             }
 
-            // Wait for an LED update
-            let led_update = rx.recv().unwrap();
+            // Wait for an LED update.  If multiple messages are waiting then
+            // receive all of them and discard all but the last.  This means
+            // if we are too slow then we will drop packets rather than
+            // falling behind and letting the buffer grow indefinitely.
+            let mut led_update = rx.recv().unwrap();
+            while let Ok(further_update) = rx.try_recv() {
+                println!("Warning: LED update packet dropped!");
+                led_update = further_update;
+            }
+
 
             // Now render the new LED state
             let leds = controller.leds_mut(0);
-            for spine in 0..12 {
+            for spine in 0..6 {
                 for led in 0..60 {
                     // Leds are [B, G, R, W] ordering
-                    leds[spine * 120 + led] = [
+                    leds[spine * 60 + led] = [
                         led_update.spines[spine][led][2],
                         led_update.spines[spine][led][1],
                         led_update.spines[spine][led][0],
                         0,
                     ];
-                    // Make the loopback LEDs mirrored
-                    leds[spine * 120 + 60 + 59 - led] = [
+                }
+            }
+            let leds = controller.leds_mut(1);
+            for spine in 6..12 {
+                for led in 0..60 {
+                    // Leds are [B, G, R, W] ordering
+                    leds[(spine - 6) * 60 + led] = [
                         led_update.spines[spine][led][2],
                         led_update.spines[spine][led][1],
                         led_update.spines[spine][led][0],
@@ -127,6 +149,15 @@ impl Led {
                     .brightness(255) // default: 255
                     .build(),
             )
+            .channel(
+                1, // Channel Index
+                ChannelBuilder::new()
+                    .pin(13) // GPIO 13 = PWM1
+                    .count(30) // Number of LEDs
+                    .strip_type(StripType::Ws2812)
+                    .brightness(255) // default: 255
+                    .build(),
+            )
             .build()
             .unwrap();
 
@@ -142,8 +173,12 @@ impl Led {
     }
 
     fn set_all_leds(controller: &mut Controller, argb: [u8; 4]) {
-        let leds = controller.leds_mut(0);
-        for led in leds {
+        let leds0 = controller.leds_mut(0);
+        for led in leds0 {
+            *led = argb;
+        }
+        let leds1 = controller.leds_mut(1);
+        for led in leds1 {
             *led = argb;
         }
         controller.render().unwrap();
