@@ -42,7 +42,10 @@ impl Led {
             self.thread_started = true;
             let gpio = self.gpio.take().unwrap();
             let rx = self.rx.take().unwrap();
-            thread::spawn(move || Self::led_thread(gpio, rx));
+            thread::Builder::new()
+                .name("ISOPOD LED".into())
+                .spawn(move || Self::led_thread(gpio, rx))
+                .unwrap();
         }
     }
 

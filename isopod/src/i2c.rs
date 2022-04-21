@@ -86,7 +86,10 @@ impl I2cPeriphs {
 
     pub fn start_thread(self: Arc<Self>) {
         if !self.internal.lock().unwrap().thread_started {
-            std::thread::spawn(move || self.i2c_thread());
+            std::thread::Builder::new()
+                .name("ISOPOD I2C".into())
+                .spawn(move || self.i2c_thread())
+                .unwrap();
         }
     }
 

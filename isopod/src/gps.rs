@@ -160,7 +160,10 @@ impl Gps {
     pub fn start_thread(self: Arc<Self>) {
         let thread_started = self.internal.lock().unwrap().thread_started;
         if !thread_started {
-            thread::spawn(move || self.gps_thread());
+            thread::Builder::new()
+                .name("ISOPOD GPS".into())
+                .spawn(move || self.gps_thread())
+                .unwrap();
         }
     }
 

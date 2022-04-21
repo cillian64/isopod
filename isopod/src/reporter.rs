@@ -15,7 +15,10 @@ pub struct Reporter {
 impl Reporter {
     pub fn new() -> Self {
         let (tx, rx) = mpsc::channel();
-        thread::spawn(move || Self::reporter_thread(rx));
+        thread::Builder::new()
+            .name("ISOPOD reporter".into())
+            .spawn(move || Self::reporter_thread(rx))
+            .unwrap();
         Self { tx }
     }
 
