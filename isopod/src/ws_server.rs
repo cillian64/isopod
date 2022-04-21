@@ -2,7 +2,7 @@ use crate::led::LedUpdate;
 use anyhow::Result;
 use futures_util::SinkExt;
 use serde::Serialize;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, mpsc};
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::{Receiver, Sender};
 use warp::{ws::WebSocket, Filter};
@@ -14,7 +14,8 @@ struct SimPacket {
 }
 
 pub struct WsServer {
-    tx: Arc<Mutex<Sender<LedUpdate>>>,
+    // This channel goes from the main thread to the JSONifier
+    tx: mpsc::Sender<LedUpdate>,
 }
 
 impl WsServer {
@@ -22,7 +23,7 @@ impl WsServer {
         let (tx, _rx) = broadcast::channel(32);
 
         // Wrap up a tokio Sender so it can live forever
-        let wrapped_tx: Arc<Mutex<Sender<LedUpdate>>> = Arc::new(Mutex::new(tx));
+        let wrapped_tx: Arc<Mutex<Sender<String>>> = Arc::new(Mutex::new(tx));
         let wrapped_tx2 = wrapped_tx.clone();
         // Make a new warp filter which provides our state - a tokio sender from
         // which we can spawn more receivers.
@@ -30,7 +31,7 @@ impl WsServer {
 
         std::thread::spawn(move || {
             let routes = warp::path("ws").and(warp::ws()).and(wrapped_tx_filter).map(
-                |ws: warp::ws::Ws, tx: Arc<Mutex<Sender<LedUpdate>>>| {
+                |ws: warp::ws::Ws, tx: Arc<Mutex<Sender<String>>>| {
                     ws.on_upgrade(move |socket| {
                         user_connected(socket, tx.lock().unwrap().subscribe())
                     })
@@ -43,35 +44,51 @@ impl WsServer {
             };
             tokio::runtime::Runtime::new().unwrap().block_on(future);
         });
-        Self { tx: wrapped_tx }
+
+        // Spawn the JSONifier thread which receives LedUpdates and converts
+        // then to JSON messages.  This is CPU intensive so we don't want it
+        // duplicated in every websocket handler but also don't want to burden
+        // the main thread with it, so it's done by a dedicated thread.
+        let (jsonifier_tx, jsonifier_rx) = mpsc::channel::<LedUpdate>();
+        std::thread::Builder::new()
+            .name("ISOPOD JSONifier".into())
+            .spawn(move || {
+                loop {
+                    let leds = jsonifier_rx.recv().unwrap();
+                    let packet = SimPacket {
+                        spines: leds.spines.clone(),
+                    };
+                    let packet_json = serde_json::to_string(&packet).unwrap();
+
+                    // We mysteriously get channel closed errors occasionally.
+                    // Not sure why, so just ignore any errors sending into the
+                    // channel.
+                    let _res = wrapped_tx.lock().unwrap().send(packet_json);
+                }
+            })
+            .unwrap();
+
+        Self { tx: jsonifier_tx }
     }
 
     pub fn led_update(&self, leds: &LedUpdate) -> Result<()> {
-        // We mysteriously get channel closed errors occasionally.  Not sure
-        // why, so just ignore any errors sending into the channel.
-        let _res = self.tx.lock().unwrap().send(leds.clone());
+        // TODO: JSONifying the LED state at 60fps takes about 60% of a
+        // raspberry pi 3 core.  Is there a more computationally efficient
+        // way to send this data to the visualiser frontend?
+
+        self.tx.send(leds.clone())?;
+
         Ok(())
     }
 }
 
-async fn user_connected(mut ws: WebSocket, mut rx: Receiver<LedUpdate>) {
+async fn user_connected(mut ws: WebSocket, mut rx: Receiver<String>) {
     println!("Websocket connected.");
 
     loop {
         // Wait for an LED state update.
-        let led_update = rx.recv().await.unwrap();
+        let packet_json = rx.recv().await.unwrap();
 
-        // Build packet
-        let packet = SimPacket {
-            spines: led_update.spines,
-        };
-        // TODO: JSONifying the LED state at 60fps takes about 60% of a
-        // raspberry pi 3 core.  Is there a more computationally efficient
-        // way to send this data to the visualiser frontend?
-        // TODO: If CPU usage becomes a problem with lots of visualiser
-        // clients connected then do the JSON serialisation in led_update()
-        // so we can just spit out the same JSON string to each client
-        let packet_json = serde_json::to_string(&packet).unwrap();
         let message = warp::ws::Message::text(&packet_json);
 
         // Send the WS packet to the client
