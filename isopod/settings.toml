@@ -1,0 +1,3 @@
+fps = 60
+ws_server = true
+do_startup_tests = false

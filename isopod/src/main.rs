@@ -7,6 +7,8 @@ use std::fs::File;
 use std::sync::Arc;
 use std::thread;
 use std::time;
+use config::Config;
+use lazy_static::lazy_static;
 
 mod gps;
 mod i2c;
@@ -16,6 +18,13 @@ mod reporter;
 mod ws_server;
 
 use patterns::Pattern;
+
+lazy_static! {
+    static ref SETTINGS: Config = Config::builder()
+        .add_source(config::File::with_name("settings"))
+        .build()
+        .unwrap();
+}
 
 // If bluetooth is enabled then the raspberry pi serial port is
 // /dev/ttyS0.  If bluetooth is disabled then /dev/ttyAMA0 is used.
@@ -43,18 +52,27 @@ fn main() -> Result<()> {
     let gps = Arc::new(gps::Gps::new(reader));
     println!("Peripheral drivers initialised okay!");
 
-    // println!("Doing start-up tests...");
-    // gps.test()?;
-    // led.test()?;
-    // i2cperiphs.test()?;
-    // println!("Start-up tests look good!");
+    if SETTINGS.get("do_startup_tests")? {
+        println!("Doing start-up tests...");
+        gps.test()?;
+        led.test()?;
+        i2cperiphs.test()?;
+        println!("Start-up tests look good!");
+    } else {
+        println!("Skipping start-up tests.");
+    }
 
     println!("Starting worker threads...");
     led.start_thread();
     i2cperiphs.clone().start_thread();
     gps.clone().start_thread();
     let mut _reporter = reporter::Reporter::new();
-    let ws = ws_server::WsServer::start_server();
+    let ws = if SETTINGS.get("ws_server")? {
+        Some(ws_server::WsServer::start_server())
+    } else {
+        println!("Websocket server disabled.");
+        None
+    };
     println!("Worker threads started.");
 
     // Main application loop
@@ -65,15 +83,20 @@ fn main() -> Result<()> {
     //    reporter.send(fix)?;
     //}
 
+    let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
+
 //    let mut pattern = patterns::shock::Shock::new();
     let mut pattern = patterns::zoom::Zoom::new();
+
     loop {
         let gps_fix = gps.get();
         let imu_readings = i2cperiphs.get();
 
         let led_state = pattern.step(&gps_fix, &imu_readings);
         led.led_update(led_state)?;
-        ws.led_update(led_state)?;
-        thread::sleep(time::Duration::from_millis(1000 / 60));
+        if let Some(ref ws) = ws {
+            ws.led_update(led_state)?;
+        }
+        thread::sleep(time::Duration::from_millis(delay_ms));
     }
 }
