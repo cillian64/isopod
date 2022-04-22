@@ -18,7 +18,9 @@ async fn main() {
         .and(warp::body::content_length_limit(1024 * 16))
         .and(warp::body::json())
         .map(|fix: Fix| {
-            println!("Rx: {:?}", fix);
+            println!("Rx: {:#?}", fix);
+            println!("https://maps.google.com/?q={},{}", fix.lat, fix.long);
+            println!("");
             warp::reply()
         });
 
