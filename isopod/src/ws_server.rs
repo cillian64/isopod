@@ -2,7 +2,7 @@ use crate::led::LedUpdate;
 use anyhow::Result;
 use futures_util::SinkExt;
 use serde::Serialize;
-use std::sync::{Arc, Mutex, mpsc};
+use std::sync::{mpsc, Arc, Mutex};
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::{Receiver, Sender};
 use warp::{ws::WebSocket, Filter};

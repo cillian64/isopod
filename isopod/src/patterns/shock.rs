@@ -7,8 +7,8 @@ use crate::i2c::ImuReadings;
 use crate::led::LedUpdate;
 use crate::patterns::Pattern;
 
-const MOVING_AVERAGE_LEN: usize = 30;  // Average over half a second
-const SHOCK_THRESH: f32 = 3.0;  // Shock threshold, in m/s/s
+const MOVING_AVERAGE_LEN: usize = 30; // Average over half a second
+const SHOCK_THRESH: f32 = 3.0; // Shock threshold, in m/s/s
 
 pub struct Shock {
     leds: LedUpdate,
@@ -59,21 +59,22 @@ impl Pattern for Shock {
             self.i = (self.i + 1) % MOVING_AVERAGE_LEN;
 
             // Evaluate the current shock
-            let shock = ((imu.xa - average[0]).powi(2) +
-                         (imu.ya - average[1]).powi(2) +
-                         (imu.za - average[2]).powi(2)).sqrt();
+            let shock = ((imu.xa - average[0]).powi(2)
+                + (imu.ya - average[1]).powi(2)
+                + (imu.za - average[2]).powi(2))
+            .sqrt();
             shock > SHOCK_THRESH
         };
 
         for spine in 0..12 {
             for led in 0..60 {
-                self.leds.spines[spine][led] = if leds_on {
-                    [255, 255, 255]
-                } else {
-                    [0, 0, 0]
-                };
+                self.leds.spines[spine][led] = if leds_on { [255, 255, 255] } else { [0, 0, 0] };
             }
         }
         &self.leds
+    }
+
+    fn name(&self) -> &'static str {
+        "shock"
     }
 }

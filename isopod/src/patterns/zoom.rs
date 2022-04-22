@@ -34,4 +34,8 @@ impl Pattern for Zoom {
         self.i = if self.i == 0 { 60 } else { self.i - 1 };
         &self.leds
     }
+
+    fn name(&self) -> &'static str {
+        "zoom"
+    }
 }

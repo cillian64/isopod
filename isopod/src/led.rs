@@ -100,7 +100,6 @@ impl Led {
                 led_update = further_update;
             }
 
-
             // Now render the new LED state
             let leds = controller.leds_mut(0);
             for spine in 0..6 {

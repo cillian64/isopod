@@ -1,14 +1,14 @@
 //! Initialises and starts up worker threads to do the actual work.
 
 use anyhow::Result;
+use config::Config;
+use lazy_static::lazy_static;
 use rppal::gpio::Gpio;
 use rppal::i2c::I2c;
 use std::fs::File;
 use std::sync::Arc;
 use std::thread;
 use std::time;
-use config::Config;
-use lazy_static::lazy_static;
 
 mod gps;
 mod i2c;
@@ -75,10 +75,28 @@ fn main() -> Result<()> {
     };
     println!("Worker threads started.");
 
-    let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
+    let mut patterns: Vec<Box<dyn Pattern>> = vec![
+        Box::new(patterns::zoom::Zoom::new()),
+        Box::new(patterns::shock::Shock::new()),
+    ];
 
-//    let mut pattern = patterns::shock::Shock::new();
-    let mut pattern = patterns::zoom::Zoom::new();
+    // Select a static pattern based on the config entry
+    let desired_pattern: String = SETTINGS.get("static_pattern")?;
+    let pattern = patterns.iter_mut().find(|x| x.name() == desired_pattern);
+
+    let pattern = match pattern {
+        Some(pattern) => pattern,
+        None => {
+            println!(
+                "WARNING: Pattern '{}' not found, defaulting to first pattern.",
+                desired_pattern
+            );
+            &mut patterns[0]
+        }
+    };
+    println!("Selected pattern: {}", pattern.name());
+
+    let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
 
     let mut last_report = time::Instant::now();
     let report_interval = SETTINGS.get::<u64>("reporter_interval")?;

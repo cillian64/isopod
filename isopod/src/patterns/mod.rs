@@ -2,14 +2,16 @@ use crate::gps::GpsFix;
 use crate::i2c::ImuReadings;
 use crate::led::LedUpdate;
 
-pub mod zoom;
 pub mod shock;
+pub mod zoom;
 
 /// Interface used for creating patterns, either stationary or in motion
 pub trait Pattern {
     /// Create a new instance of the pattern.  This is called whenever we
     /// switch from another pattern to this one
-    fn new() -> Self;
+    fn new() -> Self
+    where
+        Self: Sized;
 
     /// Provide a new set of sensor data to the pattern, and the pattern
     /// should provide an updated LED state.  For efficiency, the pattern
@@ -24,4 +26,8 @@ pub trait Pattern {
     /// data is made optional because most patterns are not expected to use it
     /// anyway.  IMU readings will always be available.
     fn step(&mut self, gps: &Option<GpsFix>, imu: &ImuReadings) -> &LedUpdate;
+
+    /// Get the name of this pattern.  Used for both display and pattern
+    /// selection in the configuration file.
+    fn name(&self) -> &'static str;
 }
