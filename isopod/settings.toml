@@ -1,3 +1,14 @@
+# Frames per second to run the patterns at
 fps = 60
+
+# Should the websocket server be abled.  Adds about 30% of one core worth of
+# CPU load.
 ws_server = true
+
+# Run start-up tests when starting the app.  Will hang if there is no GPS
+# signal.
 do_startup_tests = false
+
+# How often to report to the backend server, in seconds.  Set to 0 to disable
+# reporting.
+reporter_interval = 60

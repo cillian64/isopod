@@ -66,7 +66,7 @@ fn main() -> Result<()> {
     led.start_thread();
     i2cperiphs.clone().start_thread();
     gps.clone().start_thread();
-    let mut _reporter = reporter::Reporter::new();
+    let mut reporter = reporter::Reporter::new();
     let ws = if SETTINGS.get("ws_server")? {
         Some(ws_server::WsServer::start_server())
     } else {
@@ -75,28 +75,36 @@ fn main() -> Result<()> {
     };
     println!("Worker threads started.");
 
-    // Main application loop
-    //loop {
-    //    // Every few seconds, send a report
-    //    thread::sleep(time::Duration::from_secs(10));
-    //    let fix = gps.get();
-    //    reporter.send(fix)?;
-    //}
-
     let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
 
 //    let mut pattern = patterns::shock::Shock::new();
     let mut pattern = patterns::zoom::Zoom::new();
 
+    let mut last_report = time::Instant::now();
+    let report_interval = SETTINGS.get::<u64>("reporter_interval")?;
+
     loop {
+        // Read latest sensor values
         let gps_fix = gps.get();
         let imu_readings = i2cperiphs.get();
 
+        // Step pattern and update LEDs
         let led_state = pattern.step(&gps_fix, &imu_readings);
         led.led_update(led_state)?;
         if let Some(ref ws) = ws {
             ws.led_update(led_state)?;
         }
+
+        // Send a report if necessary
+        let now = time::Instant::now();
+        if report_interval > 0 && (now - last_report).as_secs() > report_interval {
+            last_report = now;
+            // Ignore report errors
+            println!("Sending report: {:#?}", gps_fix);
+            let _res = reporter.send(gps_fix);
+        }
+
+        // Sleep until time for the next pattern step
         thread::sleep(time::Duration::from_millis(delay_ms));
     }
 }
