@@ -17,8 +17,6 @@ mod patterns;
 mod reporter;
 mod ws_server;
 
-use patterns::Pattern;
-
 lazy_static! {
     static ref SETTINGS: Config = Config::builder()
         .add_source(config::File::with_name("settings"))
@@ -75,26 +73,11 @@ fn main() -> Result<()> {
     };
     println!("Worker threads started.");
 
-    let mut patterns: Vec<Box<dyn Pattern>> = vec![
-        Box::new(patterns::zoom::Zoom::new()),
-        Box::new(patterns::shock::Shock::new()),
-    ];
-
     // Select a static pattern based on the config entry
     let desired_pattern: String = SETTINGS.get("static_pattern")?;
-    let pattern = patterns.iter_mut().find(|x| x.name() == desired_pattern);
-
-    let pattern = match pattern {
-        Some(pattern) => pattern,
-        None => {
-            println!(
-                "WARNING: Pattern '{}' not found, defaulting to first pattern.",
-                desired_pattern
-            );
-            &mut patterns[0]
-        }
-    };
-    println!("Selected pattern: {}", pattern.name());
+    let mut pattern = patterns::pattern_by_name(&desired_pattern)
+        .unwrap_or_else(|| panic!("Unknown pattern {}", &desired_pattern))();
+    println!("Selected pattern: {}", pattern.get_name());
 
     let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
 

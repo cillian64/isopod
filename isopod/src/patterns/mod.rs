@@ -2,6 +2,9 @@ use crate::gps::GpsFix;
 use crate::i2c::ImuReadings;
 use crate::led::LedUpdate;
 
+use std::collections::HashMap;
+use lazy_static::lazy_static;
+
 pub mod shock;
 pub mod zoom;
 
@@ -9,7 +12,8 @@ pub mod zoom;
 pub trait Pattern {
     /// Create a new instance of the pattern.  This is called whenever we
     /// switch from another pattern to this one
-    fn new() -> Self
+    #[allow(clippy::new_ret_no_self)]
+    fn new() -> Box<dyn Pattern>
     where
         Self: Sized;
 
@@ -29,5 +33,20 @@ pub trait Pattern {
 
     /// Get the name of this pattern.  Used for both display and pattern
     /// selection in the configuration file.
-    fn name(&self) -> &'static str;
+    fn get_name(&self) -> &'static str;
+}
+
+lazy_static! {
+    static ref PATTERNS: HashMap<&'static str, fn() -> Box<dyn Pattern>> = HashMap::from([
+        (shock::Shock::NAME, shock::Shock::new as fn() -> Box<dyn Pattern>),
+        (zoom::Zoom::NAME, zoom::Zoom::new as fn() -> Box<dyn Pattern>),
+    ]);
+}
+
+/// Get the constructor for a pattern from its name
+pub fn pattern_by_name(name: &str) -> Option<fn() -> Box<dyn Pattern>> {
+    PATTERNS
+        .iter()
+        .find(|(&pattern_name, _cons)| pattern_name == name)
+        .map(|(_pattern_name, cons)| *cons)
 }

@@ -11,14 +11,18 @@ pub struct Zoom {
     i: usize,
 }
 
+impl Zoom {
+    pub const NAME: &'static str = "zoom";
+}
+
 impl Pattern for Zoom {
-    fn new() -> Self {
-        Self {
+    fn new() -> Box<dyn Pattern> {
+        Box::new(Self {
             leds: LedUpdate {
                 spines: vec![vec![[0; 3]; 60]; 12],
             },
             i: 0,
-        }
+        })
     }
 
     fn step(&mut self, _gps: &Option<GpsFix>, _imu: &ImuReadings) -> &LedUpdate {
@@ -35,7 +39,7 @@ impl Pattern for Zoom {
         &self.leds
     }
 
-    fn name(&self) -> &'static str {
-        "zoom"
+    fn get_name(&self) -> &'static str {
+        Self::NAME
     }
 }

@@ -21,15 +21,19 @@ pub struct Shock {
     i: usize,
 }
 
+impl Shock {
+    pub const NAME: &'static str = "zoom";
+}
+
 impl Pattern for Shock {
-    fn new() -> Self {
-        Self {
+    fn new() -> Box<dyn Pattern> {
+        Box::new(Self {
             leds: LedUpdate {
                 spines: vec![vec![[0; 3]; 60]; 12],
             },
             accel_buffer: vec![],
             i: 0,
-        }
+        })
     }
 
     fn step(&mut self, _gps: &Option<GpsFix>, imu: &ImuReadings) -> &LedUpdate {
@@ -74,7 +78,7 @@ impl Pattern for Shock {
         &self.leds
     }
 
-    fn name(&self) -> &'static str {
-        "shock"
+    fn get_name(&self) -> &'static str {
+        Self::NAME
     }
 }
