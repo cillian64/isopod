@@ -101,7 +101,6 @@ fn main() -> Result<()> {
         if report_interval > 0 && (now - last_report).as_secs() > report_interval {
             last_report = now;
             // Ignore report errors
-            println!("Sending report: {:#?}", gps_fix);
             let _res = reporter.send(gps_fix);
         }
 

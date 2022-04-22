@@ -49,7 +49,7 @@ impl Reporter {
                     "time": datetime,
                 }));
 
-            println!("Reporter thread sending fix: {:?}", fix);
+            println!("Reporter thread sending fix: {:#?}", fix);
         }
     }
 

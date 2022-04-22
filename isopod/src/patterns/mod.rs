@@ -7,6 +7,7 @@ use lazy_static::lazy_static;
 
 pub mod shock;
 pub mod zoom;
+pub mod strip_test;
 
 /// Interface used for creating patterns, either stationary or in motion
 pub trait Pattern {
@@ -40,6 +41,7 @@ lazy_static! {
     static ref PATTERNS: HashMap<&'static str, fn() -> Box<dyn Pattern>> = HashMap::from([
         (shock::Shock::NAME, shock::Shock::new as fn() -> Box<dyn Pattern>),
         (zoom::Zoom::NAME, zoom::Zoom::new as fn() -> Box<dyn Pattern>),
+        (strip_test::StripTest::NAME, strip_test::StripTest::new as fn() -> Box<dyn Pattern>),
     ]);
 }
 
