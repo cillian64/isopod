@@ -7,10 +7,12 @@ use rppal::i2c::I2c;
 use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 use std::{thread, time};
+use max1720x::MAX1720x;
 
 struct I2cPeriphsInternal {
     thread_started: bool,
     imu: ImuReadings,
+    battery: BatteryReadings,
 }
 
 pub struct I2cPeriphs {
@@ -24,7 +26,7 @@ pub struct I2cPeriphs {
 }
 
 /// Represents the sensor data captured from the IMU at a given instant
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct ImuReadings {
     /// Accelerometer X-axis reading in m/s/s
     pub xa: f32,
@@ -41,20 +43,24 @@ pub struct ImuReadings {
     pub zg: f32,
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+pub struct BatteryReadings {
+    /// Pack voltage in volts
+    pub voltage: f32,
+    /// Pack current in amps.  Negative is discharging, positive is charging
+    pub current: f32,
+    /// Estimated state-of-charge as a percentage
+    pub soc: f32,
+}
+
 impl I2cPeriphs {
     pub fn new(i2c: I2c) -> Self {
         Self {
             i2c: Mutex::new(i2c),
             internal: Mutex::new(I2cPeriphsInternal {
                 thread_started: false,
-                imu: ImuReadings {
-                    xa: 0.0,
-                    ya: 0.0,
-                    za: 0.0,
-                    xg: 0.0,
-                    yg: 0.0,
-                    zg: 0.0,
-                },
+                imu: ImuReadings::default(),
+                battery: BatteryReadings::default(),
             }),
         }
     }
@@ -103,6 +109,7 @@ impl I2cPeriphs {
         let mut i2c = self.i2c.lock().unwrap();
         let mut icm = icm20948::ICMI2C::<_, _, 0x69>::new(i2c.deref_mut()).unwrap();
         icm.init(i2c.deref_mut(), &mut hal::Delay).unwrap();
+        let mut max17205 = MAX1720x::new(i2c.deref_mut());
 
         loop {
             // Try to get some new readings from the IMU.  If we succeed, then
@@ -124,11 +131,27 @@ impl I2cPeriphs {
                 //     xa, ya, za, xg, yg, zg
                 // );
             };
-            thread::sleep(time::Duration::from_millis(100));
+
+            // Fetch the current readings from the fuel gauge. Ignore any errors.
+            if let Ok(soc) = max17205.state_of_charge(i2c.deref_mut()) {
+                self.internal.lock().unwrap().battery.soc = soc;
+            }
+            if let Ok(voltage) = max17205.voltage(i2c.deref_mut()) {
+                self.internal.lock().unwrap().battery.voltage = voltage;
+            }
+            if let Ok(current) = max17205.current(i2c.deref_mut()) {
+                self.internal.lock().unwrap().battery.current = current;
+            }
+
+            thread::sleep(time::Duration::from_millis(1000));
         }
     }
 
-    pub fn get(&self) -> ImuReadings {
+    pub fn get_imu(&self) -> ImuReadings {
         self.internal.lock().unwrap().imu
+    }
+
+    pub fn get_battery(&self) -> BatteryReadings {
+        self.internal.lock().unwrap().battery
     }
 }

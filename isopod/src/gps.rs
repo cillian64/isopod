@@ -2,7 +2,7 @@
 //! and stores the useful data.
 
 use anyhow::{anyhow, Result};
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, TimeZone};
 use nmea::Nmea;
 use std::fs::File;
 use std::io::{self, BufRead};
@@ -96,6 +96,18 @@ pub struct GpsFix {
     pub satellites: usize,
     /// The time, in UTC, of the fix
     pub time: DateTime<Utc>,
+}
+
+impl std::default::Default for GpsFix {
+    fn default() -> Self {
+        Self {
+            longitude: 0.0, // Welcome to null island
+            latitude: 0.0,
+            altitude: 0.0,
+            satellites: 0,
+            time: Utc.ymd(1970, 1, 1).and_hms(0, 0, 0),
+        }
+    }
 }
 
 struct GpsInternal {

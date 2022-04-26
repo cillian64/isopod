@@ -25,3 +25,4 @@ serde_derive = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 config = { version = "0.13.1", default_features = false, features = ["toml"] }
 lazy_static = "1.4.0"
+max1720x = "0.1.0"

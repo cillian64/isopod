@@ -87,7 +87,8 @@ fn main() -> Result<()> {
     loop {
         // Read latest sensor values
         let gps_fix = gps.get();
-        let imu_readings = i2cperiphs.get();
+        let imu_readings = i2cperiphs.get_imu();
+        let battery_readings = i2cperiphs.get_battery();
 
         // Step pattern and update LEDs
         let led_state = pattern.step(&gps_fix, &imu_readings);
@@ -101,7 +102,7 @@ fn main() -> Result<()> {
         if report_interval > 0 && (now - last_report).as_secs() > report_interval {
             last_report = now;
             // Ignore report errors
-            let _res = reporter.send(gps_fix);
+            let _res = reporter.send(gps_fix, battery_readings);
         }
 
         // Sleep until time for the next pattern step

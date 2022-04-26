@@ -606,6 +606,7 @@ dependencies = [
  "icm20948",
  "lazy_static",
  "linux-embedded-hal",
+ "max1720x",
  "nmea",
  "rppal",
  "rs_ws281x",
@@ -705,6 +706,15 @@ name = "matches"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3e378b66a060d48947b590737b30a1be76706c8dd7b8ba0f2fe3989c68a853f"
+
+[[package]]
+name = "max1720x"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3211e721c5b5755b9baf4811a885261e9f4b093aa722d7b0f64abf3e4d179eab"
+dependencies = [
+ "embedded-hal 0.2.7",
+]
 
 [[package]]
 name = "memchr"

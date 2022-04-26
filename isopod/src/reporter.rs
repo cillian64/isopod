@@ -7,9 +7,10 @@ use std::time::Duration;
 use ureq::Agent;
 
 use crate::gps::GpsFix;
+use crate::i2c::BatteryReadings;
 
 pub struct Reporter {
-    tx: mpsc::Sender<Option<GpsFix>>,
+    tx: mpsc::Sender<(Option<GpsFix>, BatteryReadings)>,
 }
 
 impl Reporter {
@@ -22,7 +23,7 @@ impl Reporter {
         Self { tx }
     }
 
-    fn reporter_thread(rx: mpsc::Receiver<Option<GpsFix>>) -> ! {
+    fn reporter_thread(rx: mpsc::Receiver<(Option<GpsFix>, BatteryReadings)>) -> ! {
         let agent: Agent = ureq::AgentBuilder::new()
             .timeout_read(Duration::from_secs(5))
             .timeout_write(Duration::from_secs(5))
@@ -31,11 +32,11 @@ impl Reporter {
         println!("Reporter thread started up.");
 
         loop {
-            let fix = match rx.recv().unwrap() {
-                Some(fix) => fix,
-                // For now don't send updates with no fix.
-                None => continue,
-            };
+            let (fix, battery_readings) = rx.recv().unwrap();
+            let fix = fix.unwrap_or_else(|| {
+                println!("Stubbing out fix because no GPS signal yet");
+                GpsFix::default()
+            });
 
             // Ignore errors here, just try again next time.
             let datetime = fix.time.format("%Y-%m-%d %H:%M:%S").to_string();
@@ -47,6 +48,9 @@ impl Reporter {
                     "sats": fix.satellites,
                     "alt": fix.altitude,
                     "time": datetime,
+                    "voltage": battery_readings.voltage,
+                    "current": battery_readings.current,
+                    "soc": battery_readings.soc,
                 }));
 
             println!("Reporter thread sending fix: {:#?}", fix);
@@ -54,8 +58,8 @@ impl Reporter {
     }
 
     #[allow(dead_code)]
-    pub fn send(&mut self, fix: Option<GpsFix>) -> Result<()> {
-        self.tx.send(fix)?;
+    pub fn send(&mut self, fix: Option<GpsFix>, battery: BatteryReadings) -> Result<()> {
+        self.tx.send((fix, battery))?;
         Ok(())
     }
 }
