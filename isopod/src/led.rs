@@ -1,15 +1,11 @@
 //! Controls the attached addressable LEDs using the PWM and GPIO peripherals.
 
+use crate::common_structs::LedUpdate;
 use anyhow::{anyhow, Result};
 use rppal::gpio::Gpio;
 use rs_ws281x::{ChannelBuilder, Controller, ControllerBuilder, StripType};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::{thread, time};
-
-#[derive(Debug, Clone)]
-pub struct LedUpdate {
-    pub spines: Vec<Vec<[u8; 3]>>,
-}
 
 /// Abstraction for the LED peripheral control, including use of GPIO to
 /// switch master power to the LEDs and PWM to output data for the

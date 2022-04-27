@@ -2,16 +2,29 @@
 
 This is the firmware for Isopod.
 
-## Firmware functions
+## Simulator / visualiser
+Normally the software is built to run on the raspberry pi hardware using the
+`build_and_remote_run.sh` script.  However for pattern development it's
+possible to run the software on a PC (with no sensor or GPS or LED access)
+and view the LED status using the web visualiser.  To run the software on
+a PC, run
 
+```cargo run --target=x86_64-unknown-linux-gnu --no-default-features```
+
+Then open the [sim/sim.html](sim/sim.html) file in your browser.  The
+visualiser can be connected to either the actual raspberry pi or to the local
+simulator by toggling the "local sim" / "hardware" buttons in the top left
+corner.
+
+## Architecture
+### Firmware functions
 * Collect location data from GPS peripheral over UART
 * Collect movement/orientation data from IMU over I2C
 * Collect battery level from fuel gauge over I2C
 * Control addressable LEDs via PWM and GPIO
 * Report location to a remote server over HTTPS over Wi-Fi
 
-## LED control algorithm
-
+### LED control algorithm
 The LED-control logic is roughly as follows:
 * If the battery level is low then do a low-power pattern:
   * Every three seconds flash all LEDs briefly red and otherwise off.
@@ -28,8 +41,7 @@ The LED-control logic is roughly as follows:
   pattern:
   * Every second, pulse red from the centre out
 
-## Architecture
-
+### Architecture
 The firmware is architected roughly as follows:
 * GPS, IMU, and battery level data are collected by separate threads
 * Their data is written into shared structures which are protected by mutexes

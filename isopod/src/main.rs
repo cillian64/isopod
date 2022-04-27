@@ -3,19 +3,30 @@
 use anyhow::Result;
 use config::Config;
 use lazy_static::lazy_static;
+#[cfg(feature = "hardware")]
 use rppal::gpio::Gpio;
+#[cfg(feature = "hardware")]
 use rppal::i2c::I2c;
+#[cfg(feature = "hardware")]
 use std::fs::File;
+#[cfg(feature = "hardware")]
 use std::sync::Arc;
 use std::thread;
 use std::time;
 
+mod common_structs;
+#[cfg(feature = "hardware")]
 mod gps;
+#[cfg(feature = "hardware")]
 mod i2c;
+#[cfg(feature = "hardware")]
 mod led;
 mod patterns;
+#[cfg(feature = "hardware")]
 mod reporter;
 mod ws_server;
+#[cfg(not(feature = "hardware"))]
+use common_structs::ImuReadings;
 
 lazy_static! {
     static ref SETTINGS: Config = Config::builder()
@@ -26,8 +37,10 @@ lazy_static! {
 
 // If bluetooth is enabled then the raspberry pi serial port is
 // /dev/ttyS0.  If bluetooth is disabled then /dev/ttyAMA0 is used.
+#[cfg(feature = "hardware")]
 const SERIAL_PORT: &str = "/dev/ttyS0";
 
+#[cfg(feature = "hardware")]
 fn main() -> Result<()> {
     println!("Hello, world!");
 
@@ -104,6 +117,38 @@ fn main() -> Result<()> {
             // Ignore report errors
             let _res = reporter.send(gps_fix, battery_readings);
         }
+
+        // Sleep until time for the next pattern step
+        thread::sleep(time::Duration::from_millis(delay_ms));
+    }
+}
+
+#[cfg(not(feature = "hardware"))]
+fn main() -> Result<()> {
+    println!("Hello, world!");
+    println!("Simulator mode: skipping setup and self-tests");
+
+    println!("Starting worker threads...");
+    // In simulator mode, always enable ws server regardless of config
+    let ws = ws_server::WsServer::start_server();
+    println!("Worker threads started.");
+
+    // Select a static pattern based on the config entry
+    let desired_pattern: String = SETTINGS.get("static_pattern")?;
+    let mut pattern = patterns::pattern_by_name(&desired_pattern)
+        .unwrap_or_else(|| panic!("Unknown pattern {}", &desired_pattern))();
+    println!("Selected pattern: {}", pattern.get_name());
+
+    let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
+
+    loop {
+        // Mock up sensor values
+        let gps_fix = None;
+        let imu_readings = ImuReadings::default();
+
+        // Step pattern and update LEDs
+        let led_state = pattern.step(&gps_fix, &imu_readings);
+        ws.led_update(led_state)?;
 
         // Sleep until time for the next pattern step
         thread::sleep(time::Duration::from_millis(delay_ms));

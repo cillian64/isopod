@@ -1,13 +1,14 @@
 //! Handles peripherals connected over I2C (the IMU and the battery fuel
 //! gauge).
 
+use crate::common_structs::{BatteryReadings, ImuReadings};
 use anyhow::{anyhow, Result};
 use linux_embedded_hal as hal;
+use max1720x::MAX1720x;
 use rppal::i2c::I2c;
 use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 use std::{thread, time};
-use max1720x::MAX1720x;
 
 struct I2cPeriphsInternal {
     thread_started: bool,
@@ -23,34 +24,6 @@ pub struct I2cPeriphs {
     // Mainly used to get readings from the sensor reading thread to the main
     // thread.
     internal: Mutex<I2cPeriphsInternal>,
-}
-
-/// Represents the sensor data captured from the IMU at a given instant
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
-pub struct ImuReadings {
-    /// Accelerometer X-axis reading in m/s/s
-    pub xa: f32,
-    /// Accelerometer Y-axis reading in m/s/s
-    pub ya: f32,
-    /// Accelerometer Z-axis reading in m/s/s
-    pub za: f32,
-
-    /// Gyroscope X-axis reading
-    pub xg: f32,
-    /// Gyroscope Y-axis reading
-    pub yg: f32,
-    /// Gyroscope Z-axis reading
-    pub zg: f32,
-}
-
-#[derive(Debug, Clone, Copy, Default)]
-pub struct BatteryReadings {
-    /// Pack voltage in volts
-    pub voltage: f32,
-    /// Pack current in amps.  Negative is discharging, positive is charging
-    pub current: f32,
-    /// Estimated state-of-charge as a percentage
-    pub soc: f32,
 }
 
 impl I2cPeriphs {

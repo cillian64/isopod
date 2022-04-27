@@ -1,4 +1,4 @@
-use crate::led::LedUpdate;
+use crate::common_structs::LedUpdate;
 use anyhow::Result;
 use futures_util::SinkExt;
 use serde::Serialize;

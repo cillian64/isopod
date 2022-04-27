@@ -2,9 +2,9 @@
 //! average of the acceleration, and light up the LEDs when the measured
 //! acceleration varies significantly from the moving average.
 
-use crate::gps::GpsFix;
-use crate::i2c::ImuReadings;
-use crate::led::LedUpdate;
+use crate::common_structs::GpsFix;
+use crate::common_structs::ImuReadings;
+use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
 
 const MOVING_AVERAGE_LEN: usize = 30; // Average over half a second

@@ -1,13 +1,13 @@
-use crate::gps::GpsFix;
-use crate::i2c::ImuReadings;
-use crate::led::LedUpdate;
+use crate::common_structs::GpsFix;
+use crate::common_structs::ImuReadings;
+use crate::common_structs::LedUpdate;
 
-use std::collections::HashMap;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 pub mod shock;
-pub mod zoom;
 pub mod strip_test;
+pub mod zoom;
 
 /// Interface used for creating patterns, either stationary or in motion
 pub trait Pattern {
@@ -39,9 +39,18 @@ pub trait Pattern {
 
 lazy_static! {
     static ref PATTERNS: HashMap<&'static str, fn() -> Box<dyn Pattern>> = HashMap::from([
-        (shock::Shock::NAME, shock::Shock::new as fn() -> Box<dyn Pattern>),
-        (zoom::Zoom::NAME, zoom::Zoom::new as fn() -> Box<dyn Pattern>),
-        (strip_test::StripTest::NAME, strip_test::StripTest::new as fn() -> Box<dyn Pattern>),
+        (
+            shock::Shock::NAME,
+            shock::Shock::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            zoom::Zoom::NAME,
+            zoom::Zoom::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            strip_test::StripTest::NAME,
+            strip_test::StripTest::new as fn() -> Box<dyn Pattern>
+        ),
     ]);
 }
 

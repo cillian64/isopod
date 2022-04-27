@@ -1,9 +1,9 @@
 //! Basic demonstrator pattern - points of light zoom from the cenre to the
 //! outer edge of the spines.
 
-use crate::gps::GpsFix;
-use crate::i2c::ImuReadings;
-use crate::led::LedUpdate;
+use crate::common_structs::GpsFix;
+use crate::common_structs::ImuReadings;
+use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
 
 pub struct Zoom {

@@ -6,8 +6,8 @@ use std::thread;
 use std::time::Duration;
 use ureq::Agent;
 
-use crate::gps::GpsFix;
-use crate::i2c::BatteryReadings;
+use crate::common_structs::BatteryReadings;
+use crate::common_structs::GpsFix;
 
 pub struct Reporter {
     tx: mpsc::Sender<(Option<GpsFix>, BatteryReadings)>,

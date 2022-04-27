@@ -2,11 +2,6 @@ var scene, camera, renderer, clock, controls, composer, listener;
 
 var spines;
 
-// const path = "ws://" + window.location.host + "/ws";
-// const ws_path = "ws://127.0.0.1:3030/ws";
-const ws_path = "ws://beacon:3030/ws";
-
-
 // Camera presets:
 const camera1_pos = [0.8, -1.5, 2];
 const camera1_target = {x: 0, y: 0, z: 1};
@@ -187,11 +182,18 @@ function update() {
 }
 
 var ws;
+var ws_path = "ws://localhost:3030/ws";
 function init_ws() {
     ws = new WebSocket(ws_path);
     ws.onclose = retry_ws;
     ws.onerror = retry_ws;
     ws.onmessage = handle_ws;
+}
+
+function changeHost(new_host) {
+    ws_path = "ws://" + new_host + ":3030/ws";
+    ws.close();
+    retry_ws();
 }
 
 function handle_ws(event) {
@@ -207,11 +209,17 @@ function handle_ws(event) {
 }
 
 function retry_ws() {
+    ws.close();
     console.log("Websocket closed/error, retrying in 1s");
     var status = document.getElementById('status');
     status.style.color = 'red';
     status.innerHTML = 'Disconnected';
     window.setTimeout(function() {
+        // Clean up the old websocket before closing down making a new one
+        ws.onclose = null;
+        ws.onmessage = null;
+        ws.close();
+
         ws = new WebSocket(ws_path);
         ws.onclose = retry_ws;
         ws.onmessage = handle_ws;
