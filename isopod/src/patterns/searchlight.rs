@@ -3,8 +3,8 @@
 use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
-use crate::patterns::Pattern;
 use crate::patterns::geometry;
+use crate::patterns::Pattern;
 
 pub struct Searchlight {
     // Cache this to save allocations even though we overwrite all the LEDs
@@ -43,7 +43,7 @@ impl Pattern for Searchlight {
             let colour = if angle > 0.0 {
                 // println!("Spine {} direction {:?} angle {} ON",
                 //     spine_num, spine_direction, angle);
-                    [255, 255, 255]
+                [255, 255, 255]
             } else {
                 // println!("Spine {} direction {:?} angle {} OFF",
                 //     spine_num, spine_direction, angle);

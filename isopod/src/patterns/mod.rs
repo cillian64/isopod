@@ -6,10 +6,11 @@ use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 // Patterns
+pub mod glitch;
+pub mod searchlight;
 pub mod shock;
 pub mod strip_test;
 pub mod zoom;
-pub mod searchlight;
 
 // Other stuff
 pub mod geometry;
@@ -59,6 +60,10 @@ lazy_static! {
         (
             searchlight::Searchlight::NAME,
             searchlight::Searchlight::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            glitch::Glitch::NAME,
+            glitch::Glitch::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }

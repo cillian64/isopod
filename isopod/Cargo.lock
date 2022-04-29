@@ -608,6 +608,7 @@ dependencies = [
  "linux-embedded-hal",
  "max1720x",
  "nmea",
+ "rand",
  "rppal",
  "rs_ws281x",
  "serde",

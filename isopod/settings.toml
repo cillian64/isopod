@@ -14,4 +14,4 @@ do_startup_tests = false
 reporter_interval = 60
 
 # Display a single static pattern
-static_pattern = "zoom"
+static_pattern = "glitch"
