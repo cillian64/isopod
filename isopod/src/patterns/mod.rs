@@ -11,6 +11,7 @@ pub mod searchlight;
 pub mod shock;
 pub mod strip_test;
 pub mod zoom;
+pub mod test_blackout;
 
 // Other stuff
 pub mod geometry;
@@ -64,6 +65,10 @@ lazy_static! {
         (
             glitch::Glitch::NAME,
             glitch::Glitch::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            test_blackout::TestBlackout::NAME,
+            test_blackout::TestBlackout::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }

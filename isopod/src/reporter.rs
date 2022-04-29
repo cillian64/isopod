@@ -53,7 +53,10 @@ impl Reporter {
                     "soc": battery_readings.soc,
                 }));
 
-            println!("Reporter thread sending fix: {:#?}", fix);
+            println!(
+                "Reporter thread sending fix: {:#?} battery {:#?}",
+                fix, battery_readings
+            );
         }
     }
 
