@@ -5,9 +5,14 @@ use crate::common_structs::LedUpdate;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
+// Patterns
 pub mod shock;
 pub mod strip_test;
 pub mod zoom;
+pub mod searchlight;
+
+// Other stuff
+pub mod geometry;
 
 /// Interface used for creating patterns, either stationary or in motion
 pub trait Pattern {
@@ -50,6 +55,10 @@ lazy_static! {
         (
             strip_test::StripTest::NAME,
             strip_test::StripTest::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            searchlight::Searchlight::NAME,
+            searchlight::Searchlight::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }
