@@ -14,7 +14,7 @@ rs_ws281x = { git = "https://github.com/rpi-ws281x/rpi-ws281x-rust.git", optiona
 max1720x = { version = "0.1.0", optional = true }
 
 anyhow = "1.0.55"
-ctrlc = "3.2.1"
+ctrlc = { version = "3.2.1", features = ["termination"]}
 color_space = "0.5.3"
 chrono = "0.4"
 ureq = { version = "2.4.0", features = ["json"]}

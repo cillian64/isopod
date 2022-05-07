@@ -102,6 +102,17 @@ impl Led {
                     Self::set_all_leds(controller, [0, 0, 0, 0]);
                     led_enable_pin.set_low();
                 }
+
+                // Destroy the controller, then park the PWM pins at +VCC.
+                // After the level shifter this will force the data pins to
+                // both be 5V DC preventing parasitic powering of the LEDs.
+                controller.take();
+                let mut pwm0 = gpio.get(12)?.into_output();
+                let mut pwm1 = gpio.get(13)?.into_output();
+                pwm0.set_reset_on_drop(false);
+                pwm1.set_reset_on_drop(false);
+                pwm0.set_high();
+                pwm1.set_high();
                 std::process::exit(0);
             }
 
