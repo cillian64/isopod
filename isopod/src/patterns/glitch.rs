@@ -8,6 +8,7 @@ use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
+use crate::led::{SPINES, LEDS_PER_SPINE};
 
 use rand::Rng;
 
@@ -78,7 +79,7 @@ impl Pattern for Glitch {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
             leds: LedUpdate {
-                spines: vec![vec![[0; 3]; 60]; 12],
+                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
             },
             glitching: false,
             rng: rand::thread_rng(),
@@ -133,14 +134,14 @@ impl Pattern for Glitch {
                 // in the list
                 for _ in 0..self.rng.gen_range(0..MAX_NUM_SEGMENTS) {
                     // Pick a random spine
-                    let spine = self.rng.gen_range(0..12);
+                    let spine = self.rng.gen_range(0..SPINES);
 
                     // Choose the length of segment
                     let len: usize = self.rng.gen_range(GLITCH_SEG_LEN_MIN..GLITCH_SEG_LEN_MAX);
 
                     // Pick an LED range to turn on
                     // Start of range, inclusive
-                    let start: usize = self.rng.gen_range(0..(60 - len));
+                    let start: usize = self.rng.gen_range(0..(LEDS_PER_SPINE - len));
 
                     // End of range, inclusive
                     let end: usize = start + len;

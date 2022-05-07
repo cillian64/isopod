@@ -6,6 +6,7 @@ use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
+use crate::led::{SPINES, LEDS_PER_SPINE};
 
 const MOVING_AVERAGE_LEN: usize = 30; // Average over half a second
 const SHOCK_THRESH: f32 = 3.0; // Shock threshold, in m/s/s
@@ -22,14 +23,14 @@ pub struct Shock {
 }
 
 impl Shock {
-    pub const NAME: &'static str = "zoom";
+    pub const NAME: &'static str = "shock";
 }
 
 impl Pattern for Shock {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
             leds: LedUpdate {
-                spines: vec![vec![[0; 3]; 60]; 12],
+                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
             },
             accel_buffer: vec![],
             i: 0,
@@ -70,9 +71,9 @@ impl Pattern for Shock {
             shock > SHOCK_THRESH
         };
 
-        for spine in 0..12 {
-            for led in 0..60 {
-                self.leds.spines[spine][led] = if leds_on { [255, 255, 255] } else { [0, 0, 0] };
+        for spine in self.leds.spines.iter_mut() {
+            for led in spine.iter_mut() {
+                *led = if leds_on { [64, 64, 64] } else { [0, 0, 0] };
             }
         }
         &self.leds

@@ -8,6 +8,9 @@ use rs_ws281x::{ChannelBuilder, Controller, ControllerBuilder, StripType};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::{thread, time};
 
+pub const LEDS_PER_SPINE: usize = 59;
+pub const SPINES: usize = 12;
+
 /// Abstraction for the LED peripheral control, including use of GPIO to
 /// switch master power to the LEDs and PWM to output data for the
 /// addressable LEDs.
@@ -20,6 +23,33 @@ pub struct Led {
     tx: Sender<LedUpdate>,
 
     thread_started: bool,
+}
+
+/// Make a new controller
+fn get_controller() -> Result<Controller> {
+    let brightness: u8 = SETTINGS.get("led_brightness")?;
+    Ok(ControllerBuilder::new()
+        .freq(800_000)
+        .dma(10)
+        .channel(
+            0, // Channel Index
+            ChannelBuilder::new()
+                .pin(12) // GPIO 12 = PWM0
+                .count((SPINES * LEDS_PER_SPINE / 2) as i32) // Number of LEDs
+                .strip_type(StripType::Ws2812)
+                .brightness(brightness)
+                .build(),
+        )
+        .channel(
+            1, // Channel Index
+            ChannelBuilder::new()
+                .pin(13) // GPIO 13 = PWM1
+                .count((SPINES * LEDS_PER_SPINE / 2) as i32) // Number of LEDs
+                .strip_type(StripType::Ws2812)
+                .brightness(brightness)
+                .build(),
+        )
+        .build()?)
 }
 
 impl Led {
@@ -44,33 +74,6 @@ impl Led {
                 .spawn(move || Self::led_thread(gpio, rx))
                 .unwrap();
         }
-    }
-
-    /// Make a new controller
-    fn get_controller() -> Result<Controller> {
-        let brightness: u8 = SETTINGS.get("led_brightness")?;
-        Ok(ControllerBuilder::new()
-            .freq(800_000)
-            .dma(10)
-            .channel(
-                0, // Channel Index
-                ChannelBuilder::new()
-                    .pin(12) // GPIO 12 = PWM0
-                    .count(360) // Number of LEDs
-                    .strip_type(StripType::Ws2812)
-                    .brightness(brightness)
-                    .build(),
-            )
-            .channel(
-                1, // Channel Index
-                ChannelBuilder::new()
-                    .pin(13) // GPIO 13 = PWM1
-                    .count(360) // Number of LEDs
-                    .strip_type(StripType::Ws2812)
-                    .brightness(brightness)
-                    .build(),
-            )
-            .build()?)
     }
 
     /// The main peripheral control thread
@@ -154,7 +157,7 @@ impl Led {
 
             if leds_enabled && controller.is_none() {
                 // LEDs newly enabled
-                controller = Some(Self::get_controller()?);
+                controller = Some(get_controller()?);
                 led_enable_pin.set_high();
             } else if !leds_enabled && controller.is_some() {
                 // LEDs newly disabled
@@ -185,10 +188,10 @@ impl Led {
             // Now render the new LED state (if LEDs are enabled)
             if let Some(ref mut controller) = controller {
                 let leds = controller.leds_mut(0);
-                for spine in 0..6 {
-                    for led in 0..60 {
+                for spine in 0..(SPINES / 2) {
+                    for led in 0..LEDS_PER_SPINE {
                         // Leds are [B, G, R, W] ordering
-                        leds[spine * 60 + led] = [
+                        leds[spine * LEDS_PER_SPINE + led] = [
                             led_update.spines[spine][led][2],
                             led_update.spines[spine][led][1],
                             led_update.spines[spine][led][0],
@@ -197,10 +200,10 @@ impl Led {
                     }
                 }
                 let leds = controller.leds_mut(1);
-                for spine in 6..12 {
-                    for led in 0..60 {
+                for spine in (SPINES / 2)..SPINES {
+                    for led in 0..LEDS_PER_SPINE {
                         // Leds are [B, G, R, W] ordering
-                        leds[(spine - 6) * 60 + led] = [
+                        leds[(spine - (SPINES / 2)) * LEDS_PER_SPINE + led] = [
                             led_update.spines[spine][led][2],
                             led_update.spines[spine][led][1],
                             led_update.spines[spine][led][0],
@@ -223,29 +226,7 @@ impl Led {
         }
 
         println!("Testing WS2812b LED controller");
-        let mut controller = ControllerBuilder::new()
-            .freq(800_000)
-            .dma(10)
-            .channel(
-                0, // Channel Index
-                ChannelBuilder::new()
-                    .pin(12) // GPIO 12 = PWM0
-                    .count(30) // Number of LEDs
-                    .strip_type(StripType::Ws2812)
-                    .brightness(255) // default: 255
-                    .build(),
-            )
-            .channel(
-                1, // Channel Index
-                ChannelBuilder::new()
-                    .pin(13) // GPIO 13 = PWM1
-                    .count(30) // Number of LEDs
-                    .strip_type(StripType::Ws2812)
-                    .brightness(255) // default: 255
-                    .build(),
-            )
-            .build()
-            .unwrap();
+        let mut controller = get_controller()?;
 
         Self::set_all_leds(&mut controller, [0, 0, 255, 0]); // red
         thread::sleep(time::Duration::from_millis(300));

@@ -8,6 +8,7 @@ use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
+use crate::led::{SPINES, LEDS_PER_SPINE};
 
 pub struct TestBlackout {
     leds: LedUpdate,
@@ -22,7 +23,7 @@ impl Pattern for TestBlackout {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
             leds: LedUpdate {
-                spines: vec![vec![[0; 3]; 60]; 12],
+                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
             },
             i: 0,
         })
@@ -30,10 +31,10 @@ impl Pattern for TestBlackout {
 
     fn step(&mut self, _gps: &Option<GpsFix>, _imu: &ImuReadings) -> &LedUpdate {
         // Counter used for timing
-        self.i = (self.i + 1) % 120;
+        self.i = (self.i + 1) % 240;
 
         // Flash one pixel at the beginning of the first spine
-        self.leds.spines[0][0] = if self.i < 60 {
+        self.leds.spines[0][0] = if self.i < 120 {
             [1, 0, 0]
         } else {
             [0, 0, 0]

@@ -5,6 +5,7 @@ use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
+use crate::led::{SPINES, LEDS_PER_SPINE};
 
 pub struct StripTest {
     leds: LedUpdate,
@@ -19,16 +20,16 @@ impl Pattern for StripTest {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
             leds: LedUpdate {
-                spines: vec![vec![[0; 3]; 60]; 12],
+                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
             },
             i: 0,
         })
     }
 
     fn step(&mut self, _gps: &Option<GpsFix>, _imu: &ImuReadings) -> &LedUpdate {
-        for spine in 0..12 {
-            for led in 0..60 {
-                self.leds.spines[spine][led] = match (led + self.i) % 10 {
+        for spine in self.leds.spines.iter_mut() {
+            for (idx, led) in spine.iter_mut().enumerate() {
+                *led = match (idx + self.i) % 10 {
                     0 => [255, 0, 0],
                     2 => [0, 255, 0],
                     4 => [0, 0, 255],

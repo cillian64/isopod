@@ -11,10 +11,10 @@ do_startup_tests = false
 
 # How often to report to the backend server, in seconds.  Set to 0 to disable
 # reporting.
-reporter_interval = 60
+reporter_interval = 5
 
 # Display a single static pattern
-static_pattern = "glitch"
+static_pattern = "zoom"
 
 # LED strip brightness, 0-255
 led_brightness = 64

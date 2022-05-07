@@ -128,7 +128,7 @@ function init_scene() {
 
         // Place LEDs along the spine
         spines[i].leds = []
-        for (var j = 0; j < 60; j++) {
+        for (var j = 0; j < 59; j++) {
             var led = new THREE.Mesh(led_geo.clone(), led_mat.clone());
             const led_scaling = 1.1 / 1.9 * j / 60.0;
             led.position.set(vertex_locations[i][0][0] * led_scaling,
@@ -202,7 +202,7 @@ function handle_ws(event) {
     status.innerHTML = 'Connected';
     var spineData = JSON.parse(event.data).spines;
     for(var spine = 0; spine < 12; spine++) { // spine
-        for(var led = 0; led < 60; led++) { // led
+        for(var led = 0; led < 59; led++) { // led
             set_led(spine, led, spineData[spine][led]);
         }
     }
