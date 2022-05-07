@@ -1,6 +1,7 @@
 //! Controls the attached addressable LEDs using the PWM and GPIO peripherals.
 
 use crate::common_structs::LedUpdate;
+use crate::SETTINGS;
 use anyhow::{anyhow, Result};
 use rppal::gpio::Gpio;
 use rs_ws281x::{ChannelBuilder, Controller, ControllerBuilder, StripType};
@@ -47,6 +48,7 @@ impl Led {
 
     /// Make a new controller
     fn get_controller() -> Result<Controller> {
+        let brightness: u8 = SETTINGS.get("led_brightness")?;
         Ok(ControllerBuilder::new()
             .freq(800_000)
             .dma(10)
@@ -56,7 +58,7 @@ impl Led {
                     .pin(12) // GPIO 12 = PWM0
                     .count(360) // Number of LEDs
                     .strip_type(StripType::Ws2812)
-                    .brightness(128) // default: 255
+                    .brightness(brightness)
                     .build(),
             )
             .channel(
@@ -65,7 +67,7 @@ impl Led {
                     .pin(13) // GPIO 13 = PWM1
                     .count(360) // Number of LEDs
                     .strip_type(StripType::Ws2812)
-                    .brightness(128) // default: 255
+                    .brightness(brightness)
                     .build(),
             )
             .build()?)

@@ -15,3 +15,6 @@ reporter_interval = 60
 
 # Display a single static pattern
 static_pattern = "glitch"
+
+# LED strip brightness, 0-255
+led_brightness = 64
