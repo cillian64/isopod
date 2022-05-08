@@ -9,9 +9,10 @@ use std::collections::HashMap;
 pub mod glitch;
 pub mod searchlight;
 pub mod shock;
+pub mod starfield;
 pub mod strip_test;
-pub mod zoom;
 pub mod test_blackout;
+pub mod zoom;
 
 // Other stuff
 pub mod geometry;
@@ -69,6 +70,10 @@ lazy_static! {
         (
             test_blackout::TestBlackout::NAME,
             test_blackout::TestBlackout::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            starfield::Starfield::NAME,
+            starfield::Starfield::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }
