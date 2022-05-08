@@ -24,6 +24,7 @@ mod led;
 mod patterns;
 #[cfg(feature = "hardware")]
 mod reporter;
+mod temperature;
 mod ws_server;
 #[cfg(not(feature = "hardware"))]
 use common_structs::ImuReadings;

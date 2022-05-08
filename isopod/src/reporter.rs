@@ -8,6 +8,7 @@ use ureq::Agent;
 
 use crate::common_structs::BatteryReadings;
 use crate::common_structs::GpsFix;
+use crate::temperature::get_temperature;
 
 pub struct Reporter {
     tx: mpsc::Sender<(Option<GpsFix>, BatteryReadings)>,
@@ -38,6 +39,10 @@ impl Reporter {
                 GpsFix::default()
             });
 
+            let temperature = get_temperature()
+                .map(|degrees| format!("{}°C", degrees))
+                .unwrap_or_else(|| "unknown".to_owned());
+
             // Ignore errors here, just try again next time.
             let datetime = fix.time.format("%Y-%m-%d %H:%M:%S").to_string();
             let _ = agent
@@ -51,11 +56,12 @@ impl Reporter {
                     "voltage": battery_readings.voltage,
                     "current": battery_readings.current,
                     "soc": battery_readings.soc,
+                    "temp": temperature,
                 }));
 
             println!(
-                "Reporter thread sending fix: {:#?} battery {:#?}",
-                fix, battery_readings
+                "Reporter thread sending fix: {:#?} battery {:#?} temperature {}",
+                fix, battery_readings, temperature
             );
         }
     }
