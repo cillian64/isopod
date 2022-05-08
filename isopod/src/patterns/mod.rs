@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 // Patterns
+pub mod colourfield;
 pub mod glitch;
 pub mod searchlight;
 pub mod shock;
@@ -74,6 +75,10 @@ lazy_static! {
         (
             starfield::Starfield::NAME,
             starfield::Starfield::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            colourfield::Colourfield::NAME,
+            colourfield::Colourfield::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }
