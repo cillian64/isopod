@@ -11,6 +11,7 @@ struct Packet {
     voltage: f32,
     current: f32,
     soc: f32,
+    temp: String,
 }
 
 #[tokio::main]
