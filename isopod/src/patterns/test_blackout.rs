@@ -8,7 +8,7 @@ use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
-use crate::led::{SPINES, LEDS_PER_SPINE};
+use crate::{LEDS_PER_SPINE, SPINES};
 
 pub struct TestBlackout {
     leds: LedUpdate,
@@ -34,11 +34,7 @@ impl Pattern for TestBlackout {
         self.i = (self.i + 1) % 240;
 
         // Flash one pixel at the beginning of the first spine
-        self.leds.spines[0][0] = if self.i < 120 {
-            [1, 0, 0]
-        } else {
-            [0, 0, 0]
-        };
+        self.leds.spines[0][0] = if self.i < 120 { [1, 0, 0] } else { [0, 0, 0] };
 
         &self.leds
     }

@@ -28,6 +28,9 @@ mod ws_server;
 #[cfg(not(feature = "hardware"))]
 use common_structs::ImuReadings;
 
+pub const LEDS_PER_SPINE: usize = 59;
+pub const SPINES: usize = 12;
+
 lazy_static! {
     static ref SETTINGS: Config = Config::builder()
         .add_source(config::File::with_name("settings"))

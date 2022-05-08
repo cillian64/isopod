@@ -2,14 +2,12 @@
 
 use crate::common_structs::LedUpdate;
 use crate::SETTINGS;
+use crate::{LEDS_PER_SPINE, SPINES};
 use anyhow::{anyhow, Result};
 use rppal::gpio::Gpio;
 use rs_ws281x::{ChannelBuilder, Controller, ControllerBuilder, StripType};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::{thread, time};
-
-pub const LEDS_PER_SPINE: usize = 59;
-pub const SPINES: usize = 12;
 
 /// Abstraction for the LED peripheral control, including use of GPIO to
 /// switch master power to the LEDs and PWM to output data for the
@@ -136,9 +134,9 @@ impl Led {
             // Decide whether LEDs should be enabled: cut power after a number
             // of frames in a row where all LEDs are off.
             if led_update
-                 .spines
-                 .iter()
-                 .all(|leds| leds.iter().all(|led| led == &[0, 0, 0]))
+                .spines
+                .iter()
+                .all(|leds| leds.iter().all(|led| led == &[0, 0, 0]))
             {
                 // All pixels are off
                 if black_frames < 3 {

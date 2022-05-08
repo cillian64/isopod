@@ -5,7 +5,7 @@ use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
-use crate::led::{SPINES, LEDS_PER_SPINE};
+use crate::{LEDS_PER_SPINE, SPINES};
 
 pub struct Zoom {
     leds: LedUpdate,
