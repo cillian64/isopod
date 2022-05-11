@@ -90,11 +90,7 @@ fn main() -> Result<()> {
     };
     println!("Worker threads started.");
 
-    // Select a static pattern based on the config entry
-    let desired_pattern: String = SETTINGS.get("static_pattern")?;
-    let mut pattern = patterns::pattern_by_name(&desired_pattern)
-        .unwrap_or_else(|| panic!("Unknown pattern {}", &desired_pattern))();
-    println!("Selected pattern: {}", pattern.get_name());
+    let mut pattern_manager = patterns::PatternManager::new();
 
     let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
 
@@ -108,7 +104,7 @@ fn main() -> Result<()> {
         let battery_readings = i2cperiphs.get_battery();
 
         // Step pattern and update LEDs
-        let led_state = pattern.step(&gps_fix, &imu_readings);
+        let led_state = pattern_manager.step(&gps_fix, &imu_readings);
         led.led_update(led_state)?;
         if let Some(ref ws) = ws {
             ws.led_update(led_state)?;
@@ -137,11 +133,7 @@ fn main() -> Result<()> {
     let ws = ws_server::WsServer::start_server();
     println!("Worker threads started.");
 
-    // Select a static pattern based on the config entry
-    let desired_pattern: String = SETTINGS.get("static_pattern")?;
-    let mut pattern = patterns::pattern_by_name(&desired_pattern)
-        .unwrap_or_else(|| panic!("Unknown pattern {}", &desired_pattern))();
-    println!("Selected pattern: {}", pattern.get_name());
+    let mut pattern_manager = patterns::PatternManager::new();
 
     let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
 
@@ -151,7 +143,7 @@ fn main() -> Result<()> {
         let imu_readings = ImuReadings::default();
 
         // Step pattern and update LEDs
-        let led_state = pattern.step(&gps_fix, &imu_readings);
+        let led_state = pattern_manager.step(&gps_fix, &imu_readings);
         ws.led_update(led_state)?;
 
         // Sleep until time for the next pattern step
