@@ -5,7 +5,6 @@ use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
-use crate::{LEDS_PER_SPINE, SPINES};
 
 pub struct Zoom {
     leds: LedUpdate,
@@ -19,9 +18,7 @@ impl Zoom {
 impl Pattern for Zoom {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
-            leds: LedUpdate {
-                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
-            },
+            leds: LedUpdate::default(),
             i: 0,
         })
     }

@@ -65,9 +65,7 @@ impl ColourWipes {
 impl Pattern for ColourWipes {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
-            leds: LedUpdate {
-                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
-            },
+            leds: LedUpdate::default(),
             rng: rand::thread_rng(),
             wipes: vec![],
             frame_counter: 0,

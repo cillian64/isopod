@@ -78,9 +78,7 @@ impl Glitch {
 impl Pattern for Glitch {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
-            leds: LedUpdate {
-                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
-            },
+            leds: LedUpdate::default(),
             glitching: false,
             rng: rand::thread_rng(),
             segments: vec![],

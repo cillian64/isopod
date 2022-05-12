@@ -8,7 +8,6 @@ use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
-use crate::{LEDS_PER_SPINE, SPINES};
 
 pub struct TestBlackout {
     leds: LedUpdate,
@@ -22,9 +21,7 @@ impl TestBlackout {
 impl Pattern for TestBlackout {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
-            leds: LedUpdate {
-                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
-            },
+            leds: LedUpdate::default(),
             i: 0,
         })
     }

@@ -2,6 +2,7 @@
 //! use them even when the hardware modules are not compiled because we're in
 //! simulator mode.
 
+use crate::{LEDS_PER_SPINE, SPINES};
 use chrono::{DateTime, TimeZone, Utc};
 
 /// Represents the data captured in a momentary GPS fix
@@ -34,6 +35,14 @@ impl std::default::Default for GpsFix {
 #[derive(Debug, Clone)]
 pub struct LedUpdate {
     pub spines: Vec<Vec<[u8; 3]>>,
+}
+
+impl Default for LedUpdate {
+    fn default() -> Self {
+        Self {
+            spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
+        }
+    }
 }
 
 /// Represents the sensor data captured from the IMU at a given instant

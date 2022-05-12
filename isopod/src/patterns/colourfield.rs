@@ -5,7 +5,6 @@ use crate::common_structs::GpsFix;
 use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
-use crate::{LEDS_PER_SPINE, SPINES};
 use color_space::{Hsv, Rgb};
 use rand::Rng;
 
@@ -21,9 +20,7 @@ impl Colourfield {
 impl Pattern for Colourfield {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
-            leds: LedUpdate {
-                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
-            },
+            leds: LedUpdate::default(),
             rng: rand::thread_rng(),
         })
     }

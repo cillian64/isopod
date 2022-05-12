@@ -5,7 +5,6 @@ use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::geometry;
 use crate::patterns::Pattern;
-use crate::{LEDS_PER_SPINE, SPINES};
 
 pub struct Searchlight {
     // Cache this to save allocations even though we overwrite all the LEDs
@@ -24,9 +23,7 @@ impl Searchlight {
 impl Pattern for Searchlight {
     fn new() -> Box<dyn Pattern> {
         Box::new(Self {
-            leds: LedUpdate {
-                spines: vec![vec![[0; 3]; LEDS_PER_SPINE]; SPINES],
-            },
+            leds: LedUpdate::default(),
             a: 0.0,
             b: 0.0,
             c: 0.0,
