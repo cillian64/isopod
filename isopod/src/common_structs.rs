@@ -2,6 +2,8 @@
 //! use them even when the hardware modules are not compiled because we're in
 //! simulator mode.
 
+#![allow(unused)]
+
 use crate::{LEDS_PER_SPINE, SPINES};
 use chrono::{DateTime, TimeZone, Utc};
 
@@ -61,6 +63,61 @@ pub struct ImuReadings {
     pub yg: f32,
     /// Gyroscope Z-axis reading
     pub zg: f32,
+}
+
+impl ImuReadings {
+    /// Calculate the magnitude of the total acceleration in m/s/s
+    pub fn accel_magnitude(&self) -> f32 {
+        f32::sqrt(self.xa + self.ya + self.za)
+    }
+
+    /// Calculate the total magnitude of rotation.  I'm not entirely sure this
+    /// makes geometric sense but it's a useful heuristic for how much we're
+    /// rotating.
+    pub fn gyro_magnitude(&self) -> f32 {
+        f32::sqrt(self.xg + self.yg + self.zg)
+    }
+}
+
+// Implemented to make moving averages a lot neater
+impl std::ops::AddAssign<ImuReadings> for ImuReadings {
+    fn add_assign(&mut self, other: Self) {
+        self.xa += other.xa;
+        self.ya += other.ya;
+        self.za += other.za;
+        self.xg += other.xg;
+        self.yg += other.yg;
+        self.zg += other.zg;
+    }
+}
+
+// Implemented to make moving averages a lot neater
+impl std::iter::Sum for ImuReadings {
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = ImuReadings>,
+    {
+        let mut total = Self::default();
+        for item in iter {
+            total += item;
+        }
+        total
+    }
+}
+
+// Implemented to make moving averages a lot neater
+impl std::ops::Div<f32> for ImuReadings {
+    type Output = ImuReadings;
+    fn div(self, rhs: f32) -> Self {
+        ImuReadings {
+            xa: self.xa / rhs,
+            ya: self.ya / rhs,
+            za: self.za / rhs,
+            xg: self.xg / rhs,
+            yg: self.yg / rhs,
+            zg: self.zg / rhs,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
