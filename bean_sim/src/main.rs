@@ -1,51 +1,24 @@
 use std::fmt;
 
 /// New physics algorithm:
-/// - Each bean stores floating point position, velocity, and next_position
+/// - Each bean stores floating point position and velocity
+/// - Reduce gravity and do smaller time-steps - do 10 or 100 steps per frame
 /// - Step:
-///   - For each bean
+///   - For each bean, in arbitrary order
 ///     - Apply acceleration to its velocity
 ///     - Calculate next_position = position + velocity
-///
-///   - For each bean, starting with the left-most
-///     - If the bean is travelling to the left:
-///       - If the bean is the left-most
-///         - If next_position is <= the left edge of the tube
-///           - Set next_position = the left edge of the tube
-///           - Zero its velocity
-///       - Else if the bean's next_position is <= that of the bean to the left of it
-///         - Set its next_position to that of the bean to the left of it + 1
-///         - If the bean to the left of it is travelling left or stationary, set
-///           this bean's velocity to that of the bean to the left of it
-///         - If the bean to the left is travelling right, zero this bean's velocity
-///
-///   - For each bean, starting with the right-most
-///     - If the bean is travelling to the right:
-///       - If the bean is the right-most:
-///         - If next_position is >= the right edge of the tube
-///           - Set next_position = the right edge of the tube
-///           - Zero its velocity
-///       - Else if the bean's next_position is >= that of the bean to the right of it
-///         - Set its next_position to that of the bean to the right of it - 1
-///         - If the bean to the right of it is travelling right or stationary, set
-///           this bean's velocity to that of the bean to the right of it
-///         - If the bean to the right is travelling left, zero this bean's velocity
-///
-/// For robustness, don't run any assertions when in production - any issues
-/// won't affect rendering, probably won't be noticable, and will probably shake
-/// out in the next physics step.
-///
-///
-/// For implementation neatness, implement
-/// fn get_left_bean(&self, from: usize) -> Option<Bean>
-/// fn get_right_bean(&self, from: usize) -> Option<Bean>
-
+///     - Depending on the sign of next_position look left or right to find
+///       either the tube end or next bean which blocks us and limit
+///       next_position as appropriate.  Set velocity to 0 if we collide
 
 
 const GRAVITY: f32 = 1.0;
 // TODO: Maybe have the tube length have some hidden slots where the core would be
 const TUBE_LEN: usize = 118;
 const NUM_BEANS: usize = 40;
+
+const STEPS_PER_FRAME: usize = 100;
+const DT: f32 = 1.0 / (STEPS_PER_FRAME as f32);
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Bean {
@@ -54,10 +27,6 @@ struct Bean {
 
     /// Units, pixels/second
     velocity: f32,
-
-    /// The desired position for this bean at the end of this physics step.
-    /// May be temporarily invalid before collision corrections are applied.
-    next_position: f32
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -66,13 +35,12 @@ struct Beans {
 }
 
 impl Beans {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let mut beans = Vec::<Bean>::new();
         for i in 0..NUM_BEANS {
             beans.push(Bean {
                 position: i as f32,
                 velocity: 0.0,
-                next_position: i as f32,
             });
         }
         Beans { beans }
@@ -84,117 +52,98 @@ impl Beans {
     /// - The beans obey the Pauli exclusion principle
     /// - The bean positions are in-range
     fn sanity_check(&self) {
-        return;
         // Check we have the right number of beans
         assert!(self.beans.len() == NUM_BEANS);
         assert!(self.beans.len() < TUBE_LEN);
+
+        let epsilon = 0.1; // allowable error
 
         let mut bean_iter = self.beans.iter().peekable();
         while let Some(bean) = bean_iter.next() {
             // Check the beans are in-order and non-overlapping
             if let Some(next_bean) = bean_iter.peek() {
-                assert!(next_bean.position > bean.position);
+                assert!(next_bean.position - bean.position > 1.0 - epsilon);
             }
 
             // Check the bean position is valid
-            #[allow(unused_comparisons)] {
-                assert!(bean.position >= 0.0);
-            }
-            assert!(bean.position <= TUBE_LEN as f32 - 1.0);
+            assert!(bean.position > -epsilon);
+            assert!(bean.position < TUBE_LEN as f32 - 1.0 + epsilon);
         }
 
     }
 
     /// Apply a physics step, where `angle`, is the angle between the bean
     /// tube and vertical, in radians.
-    fn step(&mut self, angle: f32) {
+    pub fn step(&mut self, angle: f32) {
+        for _ in 0..STEPS_PER_FRAME {
+            self.sub_step(angle);
+        }
+    }
+
+    /// Each "step" is actually a number of physics steps.  This is the physics
+    /// step which gets repeated multiple times per frame
+    fn sub_step(&mut self, angle: f32) {
         self.sanity_check();
 
         let acceleration = GRAVITY * f32::cos(angle);
 
+        // Add some randomness to each velocity, it makes it look better.
+        // Work out the magnitude of randomness to apply
+        let fuzz_magnitude = f32::abs(acceleration);
+
         // For each bean, apply acceleration and calculate next_position
         // ignoring collisions
-        for bean in self.beans.iter_mut() {
-            bean.velocity += acceleration;
-            // This is a hypothetical next position in the absence of
-            // collisions with other beans and tube ends.
-            bean.next_position = bean.position + bean.velocity;
-        }
+        for i in 0..NUM_BEANS {
+            let fuzz = fuzz_magnitude * (2.0 * rand::random::<f32>() - 1.0);
+            self.beans[i].velocity += (acceleration + fuzz) * DT;
+            // Hypothetical next position, subject to change due to collisions
+            let mut next_position = self.beans[i].position + self.beans[i].velocity * DT;
 
-        // Handle collisions for left-moving beans
-        for i in 0..(NUM_BEANS - 1) {
-            // Exclude any right-moving or stationary beans
-            if self.beans[i].velocity >= 0.0 {
-                continue;
-            }
-
-            if let Some(left_bean) = self.bean_to_left(i) {
-                // Handle collisions with left-bean
-                let mut bean = &mut self.beans[i];
-                if bean.next_position - left_bean.next_position < 1.0 {
-                    // We have collided with left-bean: sit to the right of it
-                    bean.next_position = left_bean.next_position + 1.0;
-                    // If left-bean is moving left, coallesce with it.
-                    // Otherwise stop both beans
-                    if left_bean.velocity <= 0.0 {
-                        // Coallesce the beans
-                        bean.velocity = left_bean.velocity;
-                    } else {
-                        // Stop the bean.  Left-bean is travelling right so
-                        // will be stopped later
-                        bean.velocity = 0.0;
+            // Determine which way to look for collisions.  Don't bother
+            // looking if velocity is 0.0
+            if self.beans[i].velocity > 0.0 {
+                // Look right
+                if let Some(right_bean) = self.bean_to_right(i) {
+                    // Collide with right_bean
+                    if right_bean.position - next_position < 1.0 {
+                        next_position = right_bean.position - 1.0;
+                        // If it's moving right, match its velocity.  Otherwise stop
+                        if right_bean.velocity > 0.0 {
+                            self.beans[i].velocity = right_bean.velocity;
+                        } else {
+                            self.beans[i].velocity = 0.0;
+                        }
+                    }
+                } else {
+                    // Collide with right edge of tube
+                    if TUBE_LEN as f32 - 1.0 - next_position < 1.0 {
+                        next_position = TUBE_LEN as f32 - 1.0;
+                        self.beans[i].velocity = 0.0;
                     }
                 }
-            } else {
-                // This is the left-most bean, handle collisions with the left
-                // end of the tube
-                let mut bean = &mut self.beans[i];
-                if bean.next_position <= 0.0 {
-                    bean.next_position = 0.0;
-                }
-            }
-
-        }
-
-        // Handle collisions for right-moving beans
-        for i in (0..(NUM_BEANS - 1)).rev() {
-            // Exclude any left-moving beans
-            if self.beans[i].velocity < 0.0 {
-                continue;
-            }
-
-            if let Some(right_bean) = self.bean_to_right(i) {
-                // Handle collisions with right-bean
-                let mut bean = &mut self.beans[i];
-                if right_bean.next_position - bean.next_position < 1.0 {
-                    // We have collided with right-bean: sit to the left of it
-                    bean.next_position = right_bean.next_position - 1.0;
-                    // If left-bean is moving right, coallesce with it.
-                    // Otherwise stop both beans
-                    if right_bean.velocity >= 0.0 {
-                        // Coallesce the beans
-                        bean.velocity = right_bean.velocity;
-                    } else {
-                        // Stop the bean.  Right-bean is travelling left so
-                        // should have already stopped earlier
-                        bean.velocity = 0.0;
+            } else if self.beans[i].velocity < 0.0 {
+                // Look left
+                if let Some(left_bean) = self.bean_to_left(i) {
+                    // Collide with left_bean
+                    if next_position - left_bean.position < 1.0 {
+                        next_position = left_bean.position + 1.0;
+                        // If it's moving left, match its velocity.  Otherwise stop
+                        if left_bean.velocity < 0.0 {
+                            self.beans[i].velocity = left_bean.velocity;
+                        } else {
+                            self.beans[i].velocity = 0.0;
+                        }
+                    }
+                } else {
+                    // Collide with left edge of tube
+                    if next_position < 0.0 {
+                        next_position = 0.0;
+                        self.beans[i].velocity = 0.0;
                     }
                 }
-            } else {
-                // This is the right-most bean, handle collisions with the right
-                // end of the tube
-                let mut bean = &mut self.beans[i];
-                if bean.next_position >= (TUBE_LEN - 1) as f32 {
-                    bean.next_position = (TUBE_LEN - 1) as f32;
-                }
             }
+            self.beans[i].position = next_position;
         }
-
-        // Finally, apply all of the physics steps
-        for bean in self.beans.iter_mut() {
-            bean.position = bean.next_position;
-        }
-
         self.sanity_check();
     }
 
@@ -255,17 +204,17 @@ fn main() {
     let mut counter: usize = 0;
     let mut angle_flippr = false;
     loop {
-        print!("\r{}", beans);
+        println!("                 {}", beans);
 
-        if counter % 120 == 0 {
+        if counter % 30 == 0 {
             angle_flippr = !angle_flippr;
-            println!("\nFLIP");
+            //println!("FLIP");
         }
 
         let angle = if angle_flippr {
-            std::f32::consts::FRAC_PI_2 + std::f32::consts::PI / 10.0
+            std::f32::consts::FRAC_PI_2 + std::f32::consts::PI / 20.0
         } else {
-            std::f32::consts::FRAC_PI_2 - std::f32::consts::PI / 10.0
+            std::f32::consts::FRAC_PI_2 - std::f32::consts::PI / 20.0
         };
         beans.step(angle);
 
