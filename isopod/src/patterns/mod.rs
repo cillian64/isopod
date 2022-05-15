@@ -1,5 +1,8 @@
+//! Contains the base Pattern trait which all patterns implement.  Imports the
+//! module for each pattern and provides a lookup from pattern name to the
+//! pattern constructor.
+
 use crate::common_structs::{GpsFix, ImuReadings, LedUpdate};
-use crate::SETTINGS;
 
 use lazy_static::lazy_static;
 use std::collections::HashMap;
@@ -93,42 +96,4 @@ pub fn pattern_by_name(name: &str) -> Option<fn() -> Box<dyn Pattern>> {
         .iter()
         .find(|(&pattern_name, _cons)| pattern_name == name)
         .map(|(_pattern_name, cons)| *cons)
-}
-
-/// Decides which patterns to play back and does transitions between them.
-/// Changes patterns based on movement of the isopod
-pub struct PatternManager {
-    current_pattern: Box<dyn Pattern>,
-}
-
-impl PatternManager {
-    /// Make a new pattern manager
-    pub fn new() -> Self {
-        // For now, just select a static pattern based on settings
-        let desired_pattern: String = match SETTINGS.get("static_pattern") {
-            Ok(static_pattern) => static_pattern,
-            Err(_) => {
-                eprintln!("I only know how to deal with static patterns");
-                eprintln!("And you didn't specify one in settings.toml");
-                panic!("Set 'static_pattern' in settings.toml");
-            }
-        };
-        let pattern_manager = Self {
-            current_pattern: pattern_by_name(&desired_pattern)
-                .unwrap_or_else(|| panic!("Unknown pattern {}", &desired_pattern))(),
-        };
-        println!("Selected pattern: {}", pattern_manager.current_pattern.get_name());
-        pattern_manager
-    }
-
-    /// Monitor the GPS and IMU readings to decide which pattern should
-    /// currently be in playback.  Transition between patterns where
-    /// necessary.  Run a step of whichever pattern is currently selected
-    /// and return an updated set of LED states.
-    pub fn step(&mut self, gps: &Option<GpsFix>, imu: &ImuReadings) -> &LedUpdate {
-        // TODO: Change pattern based on imu
-        // TODO: Smooth pattern transitions
-
-        self.current_pattern.step(gps, imu)
-    }
 }

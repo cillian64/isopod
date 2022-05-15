@@ -21,6 +21,7 @@ mod gps;
 mod i2c;
 #[cfg(feature = "hardware")]
 mod led;
+mod pattern_manager;
 mod patterns;
 #[cfg(feature = "hardware")]
 mod reporter;
@@ -90,7 +91,7 @@ fn main() -> Result<()> {
     };
     println!("Worker threads started.");
 
-    let mut pattern_manager = patterns::PatternManager::new();
+    let mut pattern_manager = pattern_manager::PatternManager::new();
 
     let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
 
@@ -133,7 +134,7 @@ fn main() -> Result<()> {
     let ws = ws_server::WsServer::start_server();
     println!("Worker threads started.");
 
-    let mut pattern_manager = patterns::PatternManager::new();
+    let mut pattern_manager = pattern_manager::PatternManager::new();
 
     let delay_ms = 1000 / SETTINGS.get::<u64>("fps")?;
 
