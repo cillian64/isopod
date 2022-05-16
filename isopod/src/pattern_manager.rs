@@ -74,12 +74,13 @@ impl Default for PatternManager {
 impl PatternManager {
     /// Make a new pattern manager
     pub fn new() -> Self {
-        match SETTINGS.get::<&str>("static_pattern") {
+        match SETTINGS.get::<String>("static_pattern".into()) {
             // If the user has selected a static pattern, then select the static_pattern
             // state which will persist forever.
             Ok(desired_pattern) => {
-                let pattern = pattern_by_name(desired_pattern)
-                    .unwrap_or_else(|| panic!("Unknown pattern {}", desired_pattern))(
+                println!("Loading static pattern {}", &desired_pattern);
+                let pattern = pattern_by_name(&desired_pattern)
+                    .unwrap_or_else(|| panic!("Unknown pattern {}", &desired_pattern))(
                 );
                 Self {
                     state: PatternManagerState::Static(pattern),
@@ -87,7 +88,10 @@ impl PatternManager {
                 }
             }
             // Otherwise, load into the transition pattern
-            Err(_) => PatternManager::default(),
+            Err(_) => {
+                println!("No static pattern specified, going to transition");
+                PatternManager::default()
+            }
         }
     }
 
