@@ -11,7 +11,7 @@ use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::geometry;
 use crate::patterns::Pattern;
-use crate::{SPINES, LEDS_PER_SPINE};
+use crate::{LEDS_PER_SPINE, SPINES};
 
 mod bean_sim;
 
@@ -63,7 +63,9 @@ impl Pattern for Beans {
         #[cfg(feature = "hardware")]
         let gravity = imu.accel_vector();
         #[cfg(not(feature = "hardware"))]
-        let gravity = geometry::UnitVector3d::from_angles(self.a, self.b, self.c).as_vector3d().scale(9.81);
+        let gravity = geometry::UnitVector3d::from_angles(self.a, self.b, self.c)
+            .as_vector3d()
+            .scale(9.81);
 
         // According to geometry::SPINE_DIRECTIONS, the opposing pairs are:
         // 0 and 3
@@ -99,7 +101,8 @@ impl Pattern for Beans {
             }
         }
 
-        #[cfg(not(feature = "hardware"))] {
+        #[cfg(not(feature = "hardware"))]
+        {
             self.b += std::f32::consts::PI / 60.0;
         }
 

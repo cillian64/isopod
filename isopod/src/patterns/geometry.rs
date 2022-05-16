@@ -15,7 +15,7 @@ pub struct Vector3d {
 
 impl Vector3d {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
-        Self { x, y, z}
+        Self { x, y, z }
     }
 
     /// Calculate the magnitude of this vector

@@ -4,9 +4,9 @@
 
 #![allow(unused)]
 
+use crate::patterns::geometry::Vector3d;
 use crate::{LEDS_PER_SPINE, SPINES};
 use chrono::{DateTime, TimeZone, Utc};
-use crate::patterns::geometry::Vector3d;
 
 /// Represents the data captured in a momentary GPS fix
 #[derive(Debug, Clone, Copy, PartialEq)]

@@ -53,7 +53,7 @@ impl BeanTube {
                     } else {
                         [255, 255, 255]
                     }
-                }
+                },
             });
         }
         BeanTube { beans }
@@ -82,7 +82,6 @@ impl BeanTube {
             assert!(bean.position > -epsilon);
             assert!(bean.position < TUBE_LEN as f32 - 1.0 + epsilon);
         }
-
     }
 
     /// Apply a physics step, where `angle`, is the angle between the bean

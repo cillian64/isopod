@@ -74,7 +74,7 @@ impl Default for PatternManager {
 impl PatternManager {
     /// Make a new pattern manager
     pub fn new() -> Self {
-        match SETTINGS.get::<String>("static_pattern".into()) {
+        match SETTINGS.get::<String>("static_pattern") {
             // If the user has selected a static pattern, then select the static_pattern
             // state which will persist forever.
             Ok(desired_pattern) => {
@@ -191,14 +191,14 @@ fn select_stationary_pattern(imu_average: &ImuReadings) -> Box<dyn Pattern> {
     let z_sign = imu_average.za >= 0.0;
     let pattern = match (x_sign, y_sign, z_sign) {
         (false, false, false) => pattern_by_name("zoom"),
-        (false, false, true)  => pattern_by_name("starfield"),
-        (false, true, false)  => pattern_by_name("colourfield"),
-        (false, true, true)   => pattern_by_name("glitch"),
-        (true, false, false)  => pattern_by_name("colour_wipes"),
+        (false, false, true) => pattern_by_name("starfield"),
+        (false, true, false) => pattern_by_name("colourfield"),
+        (false, true, true) => pattern_by_name("glitch"),
+        (true, false, false) => pattern_by_name("colour_wipes"),
         // Currently we only have 5 unique patterns, so repeat some:
-        (true, false, true)   => pattern_by_name("colourfield"),
-        (true, true, false)   => pattern_by_name("glitch"),
-        (true, true, true)    => pattern_by_name("colour_wipes"),
+        (true, false, true) => pattern_by_name("colourfield"),
+        (true, true, false) => pattern_by_name("glitch"),
+        (true, true, true) => pattern_by_name("colour_wipes"),
     };
     // Instantiate the pattern. Should never be None assuming I can type.
     pattern.unwrap()()

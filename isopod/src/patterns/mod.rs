@@ -8,6 +8,7 @@ use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 // Patterns
+pub mod beans;
 pub mod colourfield;
 pub mod colourwipes;
 pub mod glitch;
@@ -17,7 +18,6 @@ pub mod starfield;
 pub mod strip_test;
 pub mod test_blackout;
 pub mod zoom;
-pub mod beans;
 
 // Other stuff
 pub mod geometry;
