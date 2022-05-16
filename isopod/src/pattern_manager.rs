@@ -158,12 +158,10 @@ impl PatternManager {
                 // If we're at the end of the transition, then decide where to go next
                 if *frame_count == 119 {
                     if imu_average.gyro_magnitude() > MOVEMENT_THRESH {
-                        // TODO: Select an actual movement pattern.
-                        let pattern = pattern_by_name("shock").unwrap()();
+                        let pattern = pattern_by_name("beans").unwrap()();
                         self.next_state = Some(PatternManagerState::Movement(pattern));
                     } else {
-                        // TODO: Select stationary pattern based on orientation.
-                        let pattern = pattern_by_name("glitch").unwrap()();
+                        let pattern = select_stationary_pattern(&imu_average);
                         self.next_state = Some(PatternManagerState::Stationary(pattern));
                     }
                 }
@@ -178,4 +176,30 @@ impl PatternManager {
 
         led_state
     }
+}
+
+/// Work out our orientation from the average IMU readings and use this to
+/// select a pattern from the playlist
+fn select_stationary_pattern(imu_average: &ImuReadings) -> Box<dyn Pattern> {
+    // We can simply segment our orientation into 8 solid-angle zones by
+    // looking at the sign of each of the X, Y, and Z axes.  The 8 zones are
+    // separated by the X, Y, and Z planes of the accelerometer.  These won't
+    // necessarily align with flat faces of the outer icosphere, but given
+    // there are many more than 8 faces, hopefully this won't matter.
+    let x_sign = imu_average.xa >= 0.0;
+    let y_sign = imu_average.ya >= 0.0;
+    let z_sign = imu_average.za >= 0.0;
+    let pattern = match (x_sign, y_sign, z_sign) {
+        (false, false, false) => pattern_by_name("zoom"),
+        (false, false, true)  => pattern_by_name("starfield"),
+        (false, true, false)  => pattern_by_name("colourfield"),
+        (false, true, true)   => pattern_by_name("glitch"),
+        (true, false, false)  => pattern_by_name("colour_wipes"),
+        // Currently we only have 5 unique patterns, so repeat some:
+        (true, false, true)   => pattern_by_name("colourfield"),
+        (true, true, false)   => pattern_by_name("glitch"),
+        (true, true, true)    => pattern_by_name("colour_wipes"),
+    };
+    // Instantiate the pattern. Should never be None assuming I can type.
+    pattern.unwrap()()
 }
