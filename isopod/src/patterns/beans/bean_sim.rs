@@ -1,7 +1,5 @@
 //! This module defines the physics simulation used for the "beans" pattern.
 
-#![allow(unused)]
-
 use std::fmt;
 
 /// New physics algorithm:
@@ -15,11 +13,11 @@ use std::fmt;
 ///       either the tube end or next bean which blocks us and limit
 ///       next_position as appropriate.  Set velocity to 0 if we collide
 
-
+#[allow(unused)]
 const GRAVITY: f32 = 1.0;
 // TODO: Maybe have the tube length have some hidden slots where the core would be
 pub const TUBE_LEN: usize = 118;
-const NUM_BEANS: usize = 40;
+const NUM_BEANS: usize = 41;
 
 const STEPS_PER_FRAME: usize = 100;
 const DT: f32 = 1.0 / (STEPS_PER_FRAME as f32);
@@ -32,6 +30,9 @@ struct Bean {
 
     /// Units, pixels/second
     velocity: f32,
+
+    /// The colour of the bean...
+    colour: [u8; 3],
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -46,6 +47,13 @@ impl BeanTube {
             beans.push(Bean {
                 position: i as f32,
                 velocity: 0.0,
+                colour: {
+                    if i % 10 == 0 {
+                        [0, 0, 255]
+                    } else {
+                        [255, 255, 255]
+                    }
+                }
             });
         }
         BeanTube { beans }
@@ -79,6 +87,7 @@ impl BeanTube {
 
     /// Apply a physics step, where `angle`, is the angle between the bean
     /// tube and vertical, in radians.
+    #[allow(unused)]
     pub fn step_angle(&mut self, angle: f32) {
         let acceleration = GRAVITY * f32::cos(angle);
         self.step(acceleration);
@@ -192,10 +201,10 @@ impl BeanTube {
 
     /// Each bean has a colour.  If there is a bean at the requested position
     /// then return its colour.  Otherwise, return black ([0, 0, 0]).
+    #[allow(unused)]
     pub fn get_colour(&self, i: usize) -> [u8; 3] {
         match self.bean_at_pos(i) {
-            // TODO: actually give beans colours other than white
-            Some(_bean) => [255, 255, 255],
+            Some(bean) => bean.colour,
             None => [0, 0, 0],
         }
     }
