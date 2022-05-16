@@ -9,7 +9,7 @@ possible to run the software on a PC (with no sensor or GPS or LED access)
 and view the LED status using the web visualiser.  To run the software on
 a PC, run
 
-```cargo run --target=x86_64-unknown-linux-gnu --no-default-features```
+```cargo run --target=x86_64-unknown-linux-gnu --no-default-features --bin isopod```
 
 Then open the [sim/sim.html](sim/sim.html) file in your browser.  The
 visualiser can be connected to either the actual raspberry pi or to the local

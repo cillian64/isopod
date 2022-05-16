@@ -17,6 +17,7 @@ pub mod starfield;
 pub mod strip_test;
 pub mod test_blackout;
 pub mod zoom;
+pub mod beans;
 
 // Other stuff
 pub mod geometry;
@@ -86,6 +87,10 @@ lazy_static! {
         (
             colourwipes::ColourWipes::NAME,
             colourwipes::ColourWipes::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            beans::Beans::NAME,
+            beans::Beans::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }

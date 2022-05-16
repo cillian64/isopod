@@ -3,7 +3,13 @@ name = "isopod"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "isopod"
+path = "src/main.rs"
+
+[[bin]]
+name = "test_bean_sim"
+path = "src/patterns/beans/test_bean_sim.rs"
 
 [dependencies]
 rppal = { version = "0.13.1", features=["hal"], optional = true }

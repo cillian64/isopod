@@ -14,6 +14,10 @@ pub struct Vector3d {
 }
 
 impl Vector3d {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Self { x, y, z}
+    }
+
     /// Calculate the magnitude of this vector
     pub fn magnitude(&self) -> f32 {
         f32::sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
