@@ -6,6 +6,7 @@
 
 use crate::{LEDS_PER_SPINE, SPINES};
 use chrono::{DateTime, TimeZone, Utc};
+use crate::patterns::geometry::Vector3d;
 
 /// Represents the data captured in a momentary GPS fix
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -69,6 +70,11 @@ impl ImuReadings {
     /// Calculate the magnitude of the total acceleration in m/s/s
     pub fn accel_magnitude(&self) -> f32 {
         f32::sqrt(self.xa + self.ya + self.za)
+    }
+
+    /// Return the total acceleration as a geometry vector
+    pub fn accel_vector(&self) -> Vector3d {
+        Vector3d::new(self.xa, self.ya, self.za)
     }
 
     /// Calculate the total magnitude of rotation.  I'm not entirely sure this

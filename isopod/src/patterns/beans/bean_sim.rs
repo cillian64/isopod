@@ -1,3 +1,7 @@
+//! This module defines the physics simulation used for the "beans" pattern.
+
+#![allow(unused)]
+
 use std::fmt;
 
 /// New physics algorithm:
@@ -14,12 +18,13 @@ use std::fmt;
 
 const GRAVITY: f32 = 1.0;
 // TODO: Maybe have the tube length have some hidden slots where the core would be
-const TUBE_LEN: usize = 118;
+pub const TUBE_LEN: usize = 118;
 const NUM_BEANS: usize = 40;
 
 const STEPS_PER_FRAME: usize = 100;
 const DT: f32 = 1.0 / (STEPS_PER_FRAME as f32);
 
+/// Represents a tube with some beans in it which can slide back and forth.
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Bean {
     /// Between 0 and 117.0 inclusive
@@ -30,11 +35,11 @@ struct Bean {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-struct Beans {
+pub struct BeanTube {
     beans: Vec<Bean>,
 }
 
-impl Beans {
+impl BeanTube {
     pub fn new() -> Self {
         let mut beans = Vec::<Bean>::new();
         for i in 0..NUM_BEANS {
@@ -43,7 +48,7 @@ impl Beans {
                 velocity: 0.0,
             });
         }
-        Beans { beans }
+        BeanTube { beans }
     }
 
     /// Check that:
@@ -74,18 +79,23 @@ impl Beans {
 
     /// Apply a physics step, where `angle`, is the angle between the bean
     /// tube and vertical, in radians.
-    pub fn step(&mut self, angle: f32) {
+    pub fn step_angle(&mut self, angle: f32) {
+        let acceleration = GRAVITY * f32::cos(angle);
+        self.step(acceleration);
+    }
+
+    /// Apply a physics step, where `accel` is the total acceleration
+    /// component in the direction of this bean-tube.
+    pub fn step(&mut self, acceleration: f32) {
         for _ in 0..STEPS_PER_FRAME {
-            self.sub_step(angle);
+            self.sub_step(acceleration / 100.0);
         }
     }
 
     /// Each "step" is actually a number of physics steps.  This is the physics
     /// step which gets repeated multiple times per frame
-    fn sub_step(&mut self, angle: f32) {
+    fn sub_step(&mut self, acceleration: f32) {
         self.sanity_check();
-
-        let acceleration = GRAVITY * f32::cos(angle);
 
         // Add some randomness to each velocity, it makes it look better.
         // Work out the magnitude of randomness to apply
@@ -179,9 +189,19 @@ impl Beans {
             Some(self.beans[i + 1])
         }
     }
+
+    /// Each bean has a colour.  If there is a bean at the requested position
+    /// then return its colour.  Otherwise, return black ([0, 0, 0]).
+    pub fn get_colour(&self, i: usize) -> [u8; 3] {
+        match self.bean_at_pos(i) {
+            // TODO: actually give beans colours other than white
+            Some(_bean) => [255, 255, 255],
+            None => [0, 0, 0],
+        }
+    }
 }
 
-impl fmt::Display for Beans {
+impl fmt::Display for BeanTube {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[")?;
         for slot in 0..TUBE_LEN {
@@ -194,32 +214,4 @@ impl fmt::Display for Beans {
         write!(f, "]")?;
         Ok(())
     }
-}
-
-
-fn main() {
-    println!("Hello, world!");
-
-    let mut beans = Beans::new();
-    let mut counter: usize = 0;
-    let mut angle_flippr = false;
-    loop {
-        println!("                 {}", beans);
-
-        if counter % 30 == 0 {
-            angle_flippr = !angle_flippr;
-            //println!("FLIP");
-        }
-
-        let angle = if angle_flippr {
-            std::f32::consts::FRAC_PI_2 + std::f32::consts::PI / 20.0
-        } else {
-            std::f32::consts::FRAC_PI_2 - std::f32::consts::PI / 20.0
-        };
-        beans.step(angle);
-
-        counter += 1;
-        std::thread::sleep(std::time::Duration::from_millis(1000 / 10));
-    }
-
 }
