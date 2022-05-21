@@ -3,12 +3,12 @@ var scene, camera, renderer, clock, controls, composer, listener;
 var spines;
 
 // Camera presets:
-const camera1_pos = [0.8, -1.5, 2];
-const camera1_target = {x: 0, y: 0, z: 1};
-const camera2_pos = [0, -3, 1.8];
-const camera2_target = {x: 0, y: 0, z: 1};
+const camera1_pos = [0.8, -1.5, 1.1];
+const camera1_target = {x: 0, y: 0, z: 1.1};
+const camera2_pos = [0, 3, 1.1];
+const camera2_target = {x: 0, y: 0, z: 1.1};
 const camera3_pos = [0, 0, 5];
-const camera3_target = {x: 0, y: 0, z: 0};
+const camera3_target = {x: 0, y: 0, z: 1.1};
 
 function init_world() {
     scene = new THREE.Scene();
@@ -46,7 +46,7 @@ function init_world() {
 }
 
 function init_scene() {
-    var alight = new THREE.AmbientLight(0x101010);
+    var alight = new THREE.AmbientLight(0x333333);
     scene.add(alight);
 
     var sky_geo = new THREE.BoxGeometry(100, 100, 100);
@@ -56,7 +56,7 @@ function init_scene() {
     scene.add(sky_msh);
 
     var gnd_geo = new THREE.PlaneGeometry(16, 16, 128, 128);
-    var gnd_mat = new THREE.MeshLambertMaterial({ color: 0x404040 });
+    var gnd_mat = new THREE.MeshLambertMaterial({color: 0x40ff40});
     var gnd_msh = new THREE.Mesh(gnd_geo, gnd_mat);
     scene.add(gnd_msh);
 
@@ -106,6 +106,27 @@ function init_scene() {
         [[-phi, 0, 1],  [0, Math.atan(1.0 / phi), Math.PI / 2]],
         [[-phi, 0, -1], [0, -Math.atan(1.0 / phi), Math.PI / 2]],
     ];
+
+    // Axis markers - useful for figuring out where the world axes line up relative to the LEDs.
+    // for(var i = 0; i < 100; i++) {
+    //     scale = 30;
+    //     var marker_mesh = new THREE.SphereGeometry(0.02, 8, 8);
+
+    //     var marker_mat_x = new THREE.MeshLambertMaterial({ emissive: 0xff0000, emissiveIntensity: 1 });
+    //     var mesh_x = new THREE.Mesh(marker_mesh, marker_mat_x);
+    //     mesh_x.position.set(i / scale, 0, 1.1);
+    //     scene.add(mesh_x);
+
+    //     var marker_mat_y = new THREE.MeshLambertMaterial({ emissive: 0x00ff00, emissiveIntensity: 1 });
+    //     var mesh_y = new THREE.Mesh(marker_mesh, marker_mat_y);
+    //     mesh_y.position.set(0, i / scale, 1.1);
+    //     scene.add(mesh_y);
+
+    //     var marker_mat_z = new THREE.MeshLambertMaterial({ emissive: 0x0000ff, emissiveIntensity: 1 });
+    //     var mesh_z = new THREE.Mesh(marker_mesh, marker_mat_z);
+    //     mesh_z.position.set(0, 0, 1.1 + i / scale);
+    //     scene.add(mesh_z);
+    // }
 
     spines = [];
     for(var i = 0; i < vertex_locations.length; i++) {
