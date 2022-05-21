@@ -18,6 +18,7 @@ pub mod starfield;
 pub mod strip_test;
 pub mod test_blackout;
 pub mod zoom;
+pub mod id_spines;
 
 // Other stuff
 pub mod geometry;
@@ -52,29 +53,24 @@ pub trait Pattern {
 
 lazy_static! {
     static ref PATTERNS: HashMap<&'static str, fn() -> Box<dyn Pattern>> = HashMap::from([
+        // Movement patterns
         (
             shock::Shock::NAME,
             shock::Shock::new as fn() -> Box<dyn Pattern>
         ),
         (
+            beans::Beans::NAME,
+            beans::Beans::new as fn() -> Box<dyn Pattern>
+        ),
+
+        // Stationary patterns
+        (
             zoom::Zoom::NAME,
             zoom::Zoom::new as fn() -> Box<dyn Pattern>
         ),
         (
-            strip_test::StripTest::NAME,
-            strip_test::StripTest::new as fn() -> Box<dyn Pattern>
-        ),
-        (
-            searchlight::Searchlight::NAME,
-            searchlight::Searchlight::new as fn() -> Box<dyn Pattern>
-        ),
-        (
             glitch::Glitch::NAME,
             glitch::Glitch::new as fn() -> Box<dyn Pattern>
-        ),
-        (
-            test_blackout::TestBlackout::NAME,
-            test_blackout::TestBlackout::new as fn() -> Box<dyn Pattern>
         ),
         (
             starfield::Starfield::NAME,
@@ -88,9 +84,23 @@ lazy_static! {
             colourwipes::ColourWipes::NAME,
             colourwipes::ColourWipes::new as fn() -> Box<dyn Pattern>
         ),
+
+        // Test patterns, please ignore
         (
-            beans::Beans::NAME,
-            beans::Beans::new as fn() -> Box<dyn Pattern>
+            strip_test::StripTest::NAME,
+            strip_test::StripTest::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            searchlight::Searchlight::NAME,
+            searchlight::Searchlight::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            test_blackout::TestBlackout::NAME,
+            test_blackout::TestBlackout::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            id_spines::IdSpines::NAME,
+            id_spines::IdSpines::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }
