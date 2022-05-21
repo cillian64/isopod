@@ -18,3 +18,10 @@ static_pattern = "id_spines"
 
 # LED strip brightness, 0-255
 led_brightness = 64
+
+# This is the mapping between LED strip connectors on the PCB and physical LED
+# spine positions on the core icosahedron.  Position in the list corresponds
+# LED connectors on the PCB (cables numbered 1-12) while value corresponds to
+# which icosahedron position is connected to that connector. Icosahedron
+# positions are numbered 1-12 inclusive (i.e. 1-based).
+led_spine_mapping = [4, 3, 11, 1, 12, 2, 8, 7, 5, 9, 6, 10]

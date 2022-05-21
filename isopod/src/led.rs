@@ -89,6 +89,8 @@ impl Led {
         let mut led_enable_pin = gpio.get(5)?.into_output();
         led_enable_pin.set_low();
 
+        let map = Self::get_led_mapping()?;
+
         println!("LED thread running.");
 
         // Count how many frames we see in a row where all LEDs are disabled.
@@ -183,28 +185,36 @@ impl Led {
                 pwm1.set_high();
             }
 
-            // Now render the new LED state (if LEDs are enabled)
+            // Now render the new LED state (if LEDs are enabled).  Apply
+            // position mapping (it won't affect the software visualiser whose
+            // data doesn't come through this module).
             if let Some(ref mut controller) = controller {
                 let leds = controller.leds_mut(0);
-                for spine in 0..(SPINES / 2) {
+                // spine_hard represents a physical LED connector on the PCB
+                for spine_hard in 0..(SPINES / 2) {
+                    // Figure out which logical spine this connector maps to
+                    let spine_logical = map[spine_hard] - 1;
                     for led in 0..LEDS_PER_SPINE {
                         // Leds are [B, G, R, W] ordering
-                        leds[spine * LEDS_PER_SPINE + led] = [
-                            led_update.spines[spine][led][2],
-                            led_update.spines[spine][led][1],
-                            led_update.spines[spine][led][0],
+                        leds[spine_hard * LEDS_PER_SPINE + led] = [
+                            led_update.spines[spine_logical][led][2],
+                            led_update.spines[spine_logical][led][1],
+                            led_update.spines[spine_logical][led][0],
                             0,
                         ];
                     }
                 }
                 let leds = controller.leds_mut(1);
-                for spine in (SPINES / 2)..SPINES {
+                // spine_hard represents a physical LED connector on the PCB
+                for spine_hard in (SPINES / 2)..SPINES {
+                    // Figure out which logical spine this connector maps to
+                    let spine_logical = map[spine_hard] - 1;
                     for led in 0..LEDS_PER_SPINE {
                         // Leds are [B, G, R, W] ordering
-                        leds[(spine - (SPINES / 2)) * LEDS_PER_SPINE + led] = [
-                            led_update.spines[spine][led][2],
-                            led_update.spines[spine][led][1],
-                            led_update.spines[spine][led][0],
+                        leds[(spine_hard - (SPINES / 2)) * LEDS_PER_SPINE + led] = [
+                            led_update.spines[spine_logical][led][2],
+                            led_update.spines[spine_logical][led][1],
+                            led_update.spines[spine_logical][led][0],
                             0,
                         ];
                     }
@@ -252,5 +262,16 @@ impl Led {
     pub fn led_update(&self, leds: &LedUpdate) -> Result<()> {
         self.tx.send(leds.clone())?;
         Ok(())
+    }
+
+    fn get_led_mapping() -> Result<[usize; 12]> {
+        let map: [usize; 12] = SETTINGS.get("led_spine_mapping")?;
+
+        // Check the mapping is valid
+        let mut map_sorted = map;
+        map_sorted.sort_unstable();
+        assert_eq!(map_sorted, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+
+        Ok(map)
     }
 }

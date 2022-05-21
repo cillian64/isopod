@@ -12,13 +12,13 @@ pub mod beans;
 pub mod colourfield;
 pub mod colourwipes;
 pub mod glitch;
+pub mod id_spines;
 pub mod searchlight;
 pub mod shock;
 pub mod starfield;
 pub mod strip_test;
 pub mod test_blackout;
 pub mod zoom;
-pub mod id_spines;
 
 // Other stuff
 pub mod geometry;
