@@ -161,15 +161,19 @@ function on_keypress(event) {
     if(code == "Digit1") {
         camera_pos = camera1_pos;
         camera_target = camera1_target;
+        camera.position.set(camera_pos[0], camera_pos[1], camera_pos[2]);
+        camera.lookAt(camera_target);
     } else if(code == "Digit2") {
         camera_pos = camera2_pos;
         camera_target = camera2_target;
+        camera.position.set(camera_pos[0], camera_pos[1], camera_pos[2]);
+        camera.lookAt(camera_target);
     } else if(code == "Digit3") {
         camera_pos = camera3_pos;
         camera_target = camera3_target;
+        camera.position.set(camera_pos[0], camera_pos[1], camera_pos[2]);
+        camera.lookAt(camera_target);
     }
-    camera.position.set(camera_pos[0], camera_pos[1], camera_pos[2]);
-    camera.lookAt(camera_target);
 }
 
 function render() {
