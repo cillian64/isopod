@@ -59,9 +59,11 @@ impl Pattern for Beans {
     #[allow(unused_variables)]
     fn step(&mut self, _gps: &Option<GpsFix>, imu: &ImuReadings) -> &LedUpdate {
         // Get the acceleration vector either from the hardware, or if we're
-        // doing software sim then fake it.
+        // doing software sim then fake it.  For hardware, invert the
+        // acceleration vector because we want the force applied to the beans,
+        // not the acceleration they experience.
         #[cfg(feature = "hardware")]
-        let gravity = imu.accel_vector();
+        let gravity = imu.accel_vector().scale(-1.0);
         #[cfg(not(feature = "hardware"))]
         let gravity = geometry::UnitVector3d::from_angles(self.a, self.b, self.c)
             .as_vector3d()

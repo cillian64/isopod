@@ -19,7 +19,9 @@ const GRAVITY: f32 = 1.0;
 pub const TUBE_LEN: usize = 118;
 const NUM_BEANS: usize = 41;
 
-const STEPS_PER_FRAME: usize = 100;
+// The Pi can keep up something like 1000 physics steps per second.  At 60fps,
+// 10 steps/frame works out at 600 steps/sec which works well.
+const STEPS_PER_FRAME: usize = 10;
 const DT: f32 = 1.0 / (STEPS_PER_FRAME as f32);
 
 /// Represents a tube with some beans in it which can slide back and forth.
