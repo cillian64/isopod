@@ -41,7 +41,7 @@ impl Pattern for Searchlight {
             let colour = if angle > 0.0 {
                 // println!("Spine {} direction {:?} angle {} ON",
                 //     spine_num, spine_direction, angle);
-                [64, 64, 64]
+                [255, 255, 255]
             } else {
                 // println!("Spine {} direction {:?} angle {} OFF",
                 //     spine_num, spine_direction, angle);

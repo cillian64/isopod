@@ -17,7 +17,7 @@ reporter_interval = 5
 static_pattern = "beans"
 
 # LED strip brightness, 0-255
-led_brightness = 64
+led_brightness = 128
 
 # This is the mapping between LED strip connectors on the PCB and physical LED
 # spine positions on the core icosahedron.  Position in the list corresponds

@@ -189,19 +189,30 @@ impl Led {
             // position mapping (it won't affect the software visualiser whose
             // data doesn't come through this module).
             if let Some(ref mut controller) = controller {
+                // Work out what if any power limiting scaling is needed
+                let power_scale = Self::get_power_limit_scaling(&led_update);
+
                 let leds = controller.leds_mut(0);
                 // spine_hard represents a physical LED connector on the PCB
                 for spine_hard in 0..(SPINES / 2) {
                     // Figure out which logical spine this connector maps to
                     let spine_logical = map[spine_hard] - 1;
                     for led in 0..LEDS_PER_SPINE {
-                        // Leds are [B, G, R, W] ordering
-                        leds[spine_hard * LEDS_PER_SPINE + led] = [
-                            led_update.spines[spine_logical][led][2],
-                            led_update.spines[spine_logical][led][1],
+                        let (r, g, b) = (
                             led_update.spines[spine_logical][led][0],
-                            0,
-                        ];
+                            led_update.spines[spine_logical][led][1],
+                            led_update.spines[spine_logical][led][2],
+                        );
+
+                        // Apply power scaling if necessary
+                        let (r, g, b) = (
+                            Self::scale_val(r, power_scale),
+                            Self::scale_val(g, power_scale),
+                            Self::scale_val(b, power_scale),
+                        );
+
+                        // Leds are [B, G, R, W] ordering
+                        leds[spine_hard * LEDS_PER_SPINE + led] = [b, g, r, 0];
                     }
                 }
                 let leds = controller.leds_mut(1);
@@ -210,13 +221,21 @@ impl Led {
                     // Figure out which logical spine this connector maps to
                     let spine_logical = map[spine_hard] - 1;
                     for led in 0..LEDS_PER_SPINE {
-                        // Leds are [B, G, R, W] ordering
-                        leds[(spine_hard - (SPINES / 2)) * LEDS_PER_SPINE + led] = [
-                            led_update.spines[spine_logical][led][2],
-                            led_update.spines[spine_logical][led][1],
+                        let (r, g, b) = (
                             led_update.spines[spine_logical][led][0],
-                            0,
-                        ];
+                            led_update.spines[spine_logical][led][1],
+                            led_update.spines[spine_logical][led][2],
+                        );
+
+                        // Apply power scaling if necessary
+                        let (r, g, b) = (
+                            Self::scale_val(r, power_scale),
+                            Self::scale_val(g, power_scale),
+                            Self::scale_val(b, power_scale),
+                        );
+
+                        // Leds are [B, G, R, W] ordering
+                        leds[(spine_hard - (SPINES / 2)) * LEDS_PER_SPINE + led] = [b, g, r, 0];
                     }
                 }
                 controller.render()?;
@@ -247,6 +266,7 @@ impl Led {
         Ok(())
     }
 
+    /// Set all LEDs in this controller to the same colour
     fn set_all_leds(controller: &mut Controller, argb: [u8; 4]) {
         let leds0 = controller.leds_mut(0);
         for led in leds0 {
@@ -259,11 +279,19 @@ impl Led {
         controller.render().unwrap();
     }
 
+    /// Function to be called in the main thread - sends a new LED state to
+    /// the LED thread where it is passed to the hardware
     pub fn led_update(&self, leds: &LedUpdate) -> Result<()> {
         self.tx.send(leds.clone())?;
         Ok(())
     }
 
+    /// Get the mapping from physical PCB connectors to spine positions. The
+    /// mapping is loaded from the config file.  Each position in the array
+    /// corresponds to a PCB connector (numebered 1-12 inclusive) and each
+    /// value in the array is the spine position (numbered 1-12 inclusive).
+    /// Spine positions are defined by the web visualiser (and also appear in
+    /// geometry.rs)
     fn get_led_mapping() -> Result<[usize; 12]> {
         let map: [usize; 12] = SETTINGS.get("led_spine_mapping")?;
 
@@ -273,5 +301,67 @@ impl Led {
         assert_eq!(map_sorted, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
         Ok(map)
+    }
+
+    /// Work out how much current will be consumed by the LEDs in the
+    /// requested illuminations.  If this exceeds or nears the maximum
+    /// allowable value then work out a scaling to bring them back in range.
+    /// If no scaling is required then None is returned.
+    fn get_power_limit_scaling(leds: &LedUpdate) -> Option<f32> {
+        // We work out the current as follows:
+        // - There is a constant offset current for powering the WS2812b
+        //   on-chip controllers (assume no auto-off function)
+        // - Assume the LEDs are linear, i.e. that a subpixel value of 255
+        //   consumes 255 times more current than a value of 1 (this is backed
+        //   up by experiment)
+        // - Use different current-per-value scalings for each of R, G, and B
+        //   (they are more similar than I expected but slightly different)
+
+        // Actual measurements, all at 15V rail with LED brightness 128/255
+        // With all LEDs fully off, so just the Pi: -0.2A
+        // With one LED very slightly on, so no auto-off: -0.5A
+        // With one spine (118 LEDs) at full red: -0.75A
+        // With one spine (118 LEDs) at full green: -0.75A
+        // With one spine (118 LEDs) at full blue: -0.75A
+        // 4x spines full red: -1.61A
+        // 4x spines full green: -1.5A
+        // 4x spines full blue: -1.62A
+        // 1x spine at full white: -1.3A
+
+        // Values determined by measurement, all in amps.  All are per logical
+        // pixel, i.e. per two physical (doubled up) LED pixels.
+        let current_offset: f32 = 1.5;       // Approximate guess
+        let current_per_val_r: f32 = 0.00005533; // Approximate guess
+        let current_per_val_g: f32 = 0.00004985; // Approximate guess
+        let current_per_val_b: f32 = 0.00005533; // Approximate guess
+
+        let mut total_current: f32 = current_offset;
+        for spine in leds.spines.iter() {
+            for led in spine.iter() {
+                total_current += led[0] as f32 * current_per_val_r;
+                total_current += led[1] as f32 * current_per_val_g;
+                total_current += led[2] as f32 * current_per_val_b;
+            }
+        }
+
+        // Our 5V DC-DC converter is limited to 5A output, let's limit to 4A
+        // for safety. There are various nice smooth limiting curves we could
+        // use, but for now just do a hard compressor: If the current would
+        // exceed 5A then apply scaling to all LEDs such that it equals 5A.
+        let limit: f32 = 4.0;
+        if total_current <= limit {
+            None
+        } else {
+            Some(limit / total_current)
+        }
+    }
+
+    /// Apply scaling to a subpixel value, if required
+    fn scale_val(value: u8, scaling: Option<f32>) -> u8 {
+        if let Some(scaling) = scaling {
+            f32::round(value as f32 * scaling) as u8
+        } else {
+            value
+        }
     }
 }

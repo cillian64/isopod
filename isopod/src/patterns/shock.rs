@@ -70,7 +70,7 @@ impl Pattern for Shock {
 
         for spine in self.leds.spines.iter_mut() {
             for led in spine.iter_mut() {
-                *led = if leds_on { [64, 64, 64] } else { [0, 0, 0] };
+                *led = if leds_on { [255, 255, 255] } else { [0, 0, 0] };
             }
         }
         &self.leds
