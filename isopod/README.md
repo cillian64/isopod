@@ -51,3 +51,13 @@ The firmware is architected roughly as follows:
   PWM and GPIO peripherals to control the LEDs.
 * A location reporting thread periodically reports the location over HTTPS
   over Wi-Fi.
+
+## Setup
+
+Install rust with default setup:
+
+`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+
+Install some more things, some only required for cross-compilation
+
+sudo apt install llvm build-essential gcc-arm-linux-gnueabihf libclang-dev gcc-multilib
