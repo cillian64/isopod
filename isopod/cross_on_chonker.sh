@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Run the cross-compile on the build server, copy back the resulting binary,
 # and then run it.  Note that this assumes you are actually developing on the
