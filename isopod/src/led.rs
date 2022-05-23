@@ -330,7 +330,7 @@ impl Led {
 
         // Values determined by measurement, all in amps.  All are per logical
         // pixel, i.e. per two physical (doubled up) LED pixels.
-        let current_offset: f32 = 1.5;       // Approximate guess
+        let current_offset: f32 = 1.5; // Approximate guess
         let current_per_val_r: f32 = 0.00005533; // Approximate guess
         let current_per_val_g: f32 = 0.00004985; // Approximate guess
         let current_per_val_b: f32 = 0.00005533; // Approximate guess

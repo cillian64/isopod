@@ -14,6 +14,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time;
 
+mod circular_buffer;
 mod common_structs;
 #[cfg(feature = "hardware")]
 mod gps;
@@ -21,6 +22,7 @@ mod gps;
 mod i2c;
 #[cfg(feature = "hardware")]
 mod led;
+mod motion_sensor;
 mod pattern_manager;
 mod patterns;
 #[cfg(feature = "hardware")]

@@ -3,6 +3,7 @@
 //! movement and orientation
 
 use crate::common_structs::{GpsFix, ImuReadings, LedUpdate};
+use crate::motion_sensor::MotionSensor;
 use crate::patterns::{pattern_by_name, Pattern};
 use crate::SETTINGS;
 
@@ -33,12 +34,6 @@ enum PatternManagerState {
     Static(Box<dyn Pattern>),
 }
 
-/// Length of the moving average used for movement detection, affects sensitivity
-const MOVING_AVERAGE_LEN: usize = 120; // 2 seconds, at 60fps
-
-/// Threshold for movement detection
-const MOVEMENT_THRESH: f32 = 1.0; // TODO: adjust this value
-
 /// Decides which patterns to play back and does transitions between them.
 /// Changes patterns based on movement of the isopod
 pub struct PatternManager {
@@ -46,12 +41,7 @@ pub struct PatternManager {
     /// played back (unless we are in transition state)
     state: PatternManagerState,
 
-    /// Circular buffer, used to work out a moving average of the accelerometer
-    /// and gyro readings
-    moving_average_buffer: Vec<ImuReadings>,
-
-    /// Next position to write to in the circulate buffer.
-    moving_average_ptr: usize,
+    motion: MotionSensor,
 
     /// If we decide a state change is required, which state should be selected
     /// at the next frame.  State changes are deferred one frame for lifetime
@@ -64,8 +54,7 @@ impl Default for PatternManager {
     fn default() -> Self {
         Self {
             state: PatternManagerState::Transition(LedUpdate::default(), 0),
-            moving_average_buffer: vec![],
-            moving_average_ptr: 0,
+            motion: MotionSensor::new(),
             next_state: None,
         }
     }
@@ -95,32 +84,14 @@ impl PatternManager {
         }
     }
 
-    /// Add the new reading to the moving average buffer, then calculate and
-    /// return the current moving average of the readings in the buffer.
-    fn update_moving_average(&mut self, imu: &ImuReadings) -> ImuReadings {
-        // Update the moving average buffer
-        if self.moving_average_buffer.len() < MOVING_AVERAGE_LEN {
-            // Before the circular buffer is full, just append to it.  Ignore the pointer
-            self.moving_average_buffer.push(*imu);
-        } else {
-            self.moving_average_buffer[self.moving_average_ptr] = *imu;
-            self.moving_average_ptr = (self.moving_average_ptr + 1) % MOVING_AVERAGE_LEN;
-        }
-
-        // Calculate the current moving average
-        self.moving_average_buffer
-            .iter()
-            .cloned()
-            .sum::<ImuReadings>()
-            / (MOVING_AVERAGE_LEN as f32)
-    }
-
     /// Monitor the GPS and IMU readings to decide which pattern should
     /// currently be in playback.  Transition between patterns where
     /// necessary.  Run a step of whichever pattern is currently selected
     /// and return an updated set of LED states.
     pub fn step(&mut self, gps: &Option<GpsFix>, imu: &ImuReadings) -> &LedUpdate {
-        let imu_average = self.update_moving_average(imu);
+        self.motion.push(*imu);
+        let shock_detected = self.motion.detect_fast_movement();
+        let creep_detected = self.motion.detect_slow_movement();
 
         // If a state change was deferred from the last step, apply it now
         if let Some(next_state) = self.next_state.take() {
@@ -131,7 +102,8 @@ impl PatternManager {
         let led_state = match &mut self.state {
             PatternManagerState::Stationary(pattern) => {
                 let led_state = pattern.step(gps, imu);
-                if imu_average.gyro_magnitude() > MOVEMENT_THRESH {
+                if shock_detected || creep_detected {
+                    println!("PatternManager: Stationary detected movement so going to transition");
                     self.next_state = Some(PatternManagerState::Transition(led_state.clone(), 0));
                 }
                 led_state
@@ -139,7 +111,8 @@ impl PatternManager {
 
             PatternManagerState::Movement(pattern) => {
                 let led_state = pattern.step(gps, imu);
-                if imu_average.gyro_magnitude() < MOVEMENT_THRESH {
+                if self.motion.long_time_since_last_movement() {
+                    println!("PatternManager: Movement detected stationary so going to transition");
                     self.next_state = Some(PatternManagerState::Transition(led_state.clone(), 0));
                 }
                 led_state
@@ -149,19 +122,22 @@ impl PatternManager {
                 // Fade out the LEDs a bit:
                 for spine in led_state.spines.iter_mut() {
                     for led in spine.iter_mut() {
-                        led[0] = u8::max(1, led[0]) - 1;
-                        led[1] = u8::max(1, led[1]) - 1;
-                        led[2] = u8::max(1, led[2]) - 1;
+                        led[0] = u8::max(3, led[0]) - 3;
+                        led[1] = u8::max(3, led[1]) - 3;
+                        led[2] = u8::max(3, led[2]) - 3;
                     }
                 }
 
                 // If we're at the end of the transition, then decide where to go next
                 if *frame_count == 119 {
-                    if imu_average.gyro_magnitude() > MOVEMENT_THRESH {
+                    if shock_detected || creep_detected {
+                        println!("PatternManager: Transitioning to movement");
                         let pattern = pattern_by_name("beans").unwrap()();
                         self.next_state = Some(PatternManagerState::Movement(pattern));
                     } else {
-                        let pattern = select_stationary_pattern(&imu_average);
+                        println!("PatternManager: Transitioning to stationary");
+                        let pattern =
+                            select_stationary_pattern(self.motion.get_latest().unwrap_or_default());
                         self.next_state = Some(PatternManagerState::Stationary(pattern));
                     }
                 }
@@ -180,7 +156,7 @@ impl PatternManager {
 
 /// Work out our orientation from the average IMU readings and use this to
 /// select a pattern from the playlist
-fn select_stationary_pattern(imu_average: &ImuReadings) -> Box<dyn Pattern> {
+fn select_stationary_pattern(imu_average: ImuReadings) -> Box<dyn Pattern> {
     // We can simply segment our orientation into 8 solid-angle zones by
     // looking at the sign of each of the X, Y, and Z axes.  The 8 zones are
     // separated by the X, Y, and Z planes of the accelerometer.  These won't

@@ -41,6 +41,17 @@ impl Vector3d {
     }
 }
 
+impl std::ops::Sub<Self> for Vector3d {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
+        }
+    }
+}
+
 /// unit 3d vector describing a direction from the origin
 #[derive(Clone, Debug, PartialEq)]
 pub struct UnitVector3d {
