@@ -15,6 +15,7 @@ pub mod glitch;
 pub mod id_spines;
 pub mod searchlight;
 pub mod shock;
+pub mod sleep;
 pub mod starfield;
 pub mod strip_test;
 pub mod test_blackout;
@@ -49,6 +50,12 @@ pub trait Pattern {
     /// Get the name of this pattern.  Used for both display and pattern
     /// selection in the configuration file.
     fn get_name(&self) -> &'static str;
+
+    /// Is this pattern a sleep mode pattern, i.e. is it immune from the sleep
+    /// mode timeout
+    fn is_sleep(&self) -> bool {
+        false
+    }
 }
 
 lazy_static! {
@@ -101,6 +108,10 @@ lazy_static! {
         (
             id_spines::IdSpines::NAME,
             id_spines::IdSpines::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            sleep::Sleep::NAME,
+            sleep::Sleep::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }

@@ -7,7 +7,11 @@ use crate::common_structs::ImuReadings;
 
 /// How long to wait after the last detected movement to exit the motion
 /// pattern, in frames
-const TIME_SINCE_MOVEMENT_THRESH: usize = 600;
+const MOVEMENT_PATTERN_TIMEOUT: usize = 600;
+
+/// How long to run stationary patterns before going into sleep mode, in
+/// frames
+const SLEEP_TIMEOUT: usize = 7200;
 
 /// Length of fast moving average filter in frames
 const FAST_LPF_LEN: usize = 15;
@@ -92,9 +96,14 @@ impl MotionSensor {
         }
     }
 
-    /// How long ago did we last see movement, measured in frames or samples
-    pub fn long_time_since_last_movement(&self) -> bool {
-        self.samples_since_last_movement > TIME_SINCE_MOVEMENT_THRESH
+    /// Has it been long enough since movement that the movement pattern should end
+    pub fn movement_timeout(&self) -> bool {
+        self.samples_since_last_movement > MOVEMENT_PATTERN_TIMEOUT
+    }
+
+    /// Has it been long enough since movement that we should go to sleep
+    pub fn sleep_timeout(&self) -> bool {
+        self.samples_since_last_movement > SLEEP_TIMEOUT
     }
 
     /// Get the average from the fast average buffer

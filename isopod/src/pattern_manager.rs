@@ -101,17 +101,25 @@ impl PatternManager {
         // Determine the next state, and the current LEDs state
         let led_state = match &mut self.state {
             PatternManagerState::Stationary(pattern) => {
+                let is_sleep = pattern.is_sleep();
                 let led_state = pattern.step(gps, imu);
                 if shock_detected || creep_detected {
                     println!("PatternManager: Stationary detected movement so going to transition");
                     self.next_state = Some(PatternManagerState::Transition(led_state.clone(), 0));
+                }
+
+                // If we're in a stationary pattern *other than sleep*, then
+                // after a certain timeout go to the sleep pattern
+                if !is_sleep && self.motion.sleep_timeout() {
+                    println!("PatternManager: Sleep timeout, so going to transition");
+                    self.next_state = Some(PatternManagerState::Transition(led_state.clone(), 0))
                 }
                 led_state
             }
 
             PatternManagerState::Movement(pattern) => {
                 let led_state = pattern.step(gps, imu);
-                if self.motion.long_time_since_last_movement() {
+                if self.motion.movement_timeout() {
                     println!("PatternManager: Movement detected stationary so going to transition");
                     self.next_state = Some(PatternManagerState::Transition(led_state.clone(), 0));
                 }
@@ -130,7 +138,11 @@ impl PatternManager {
 
                 // If we're at the end of the transition, then decide where to go next
                 if *frame_count == 119 {
-                    if shock_detected || creep_detected {
+                    if self.motion.sleep_timeout() {
+                        println!("PatternManager: Transitioning to sleep");
+                        let pattern = pattern_by_name("sleep").unwrap()();
+                        self.next_state = Some(PatternManagerState::Stationary(pattern));
+                    } else if shock_detected || creep_detected {
                         println!("PatternManager: Transitioning to movement");
                         let pattern = pattern_by_name("beans").unwrap()();
                         self.next_state = Some(PatternManagerState::Movement(pattern));
