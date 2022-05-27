@@ -7,7 +7,7 @@ use crate::common_structs::ImuReadings;
 
 /// How long to wait after the last detected movement to exit the motion
 /// pattern, in frames
-const MOVEMENT_PATTERN_TIMEOUT: usize = 600;
+const MOVEMENT_PATTERN_TIMEOUT: usize = 200;
 
 /// How long to run stationary patterns before going into sleep mode, in
 /// frames
@@ -22,10 +22,10 @@ const SLOW_LPF_LEN: usize = 600;
 const GRAVITY: f32 = 9.81;
 
 /// Threshold to detect fast movement based on accelerometer
-const ACCEL_SHOCK_THRESH: f32 = 2.0;
+const ACCEL_SHOCK_THRESH: f32 = 0.5;
 
 /// Threshold to detect fast movement based on gyro
-const GYRO_SHOCK_THRESH: f32 = 0.5;
+const GYRO_SHOCK_THRESH: f32 = 1.0;
 
 /// Threshold to detect slow movement
 const SLOW_MOVEMENT_THRESH: f32 = 1.0;
