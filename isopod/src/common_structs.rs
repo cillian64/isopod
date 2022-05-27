@@ -69,7 +69,7 @@ pub struct ImuReadings {
 impl ImuReadings {
     /// Calculate the magnitude of the total acceleration in m/s/s
     pub fn accel_magnitude(&self) -> f32 {
-        f32::sqrt(self.xa + self.ya + self.za)
+        f32::sqrt(self.xa * self.xa + self.ya * self.ya + self.za * self.za)
     }
 
     /// Return the total acceleration as a geometry vector
