@@ -70,11 +70,19 @@ impl MotionSensor {
 
     /// Are we currently experiencing a fast movement or shock?  Will return
     /// false if the fast internal buffer is not yet full
-    pub fn detect_fast_movement(&self) -> bool {
+    pub fn detect_fast_movement(&mut self) -> bool {
         if let Some(fast_average) = self.fast_lpf_buffer.mean() {
             let accel_shock =
                 f32::abs(fast_average.accel_magnitude() - GRAVITY) > ACCEL_SHOCK_THRESH;
             let gyro_shock = fast_average.gyro_magnitude() > GYRO_SHOCK_THRESH;
+
+            // Each time we see fast movement, reset the creep buffer so that
+            // we don't see spurious creeps in stationary periods after
+            // movement.
+            if accel_shock || gyro_shock {
+                self.slow_lpf_buffer.clear();
+            }
+
             accel_shock || gyro_shock
         } else {
             false

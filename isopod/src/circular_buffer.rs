@@ -85,6 +85,11 @@ where
             None
         }
     }
+
+    /// Clear the internal circular buffer
+    pub fn clear(&mut self) {
+        self.buffer.clear();
+    }
 }
 
 #[cfg(test)]
