@@ -103,8 +103,11 @@ impl PatternManager {
             PatternManagerState::Stationary(pattern) => {
                 let is_sleep = pattern.is_sleep();
                 let led_state = pattern.step(gps, imu);
-                if shock_detected || creep_detected {
-                    println!("PatternManager: Stationary detected movement so going to transition");
+                if shock_detected {
+                    println!("PatternManager: Stationary detected shock so going to transition");
+                    self.next_state = Some(PatternManagerState::Transition(led_state.clone(), 0));
+                } else if creep_detected {
+                    println!("PatternManager: Stationary detected creep so going to transition");
                     self.next_state = Some(PatternManagerState::Transition(led_state.clone(), 0));
                 }
 
@@ -120,7 +123,7 @@ impl PatternManager {
             PatternManagerState::Movement(pattern) => {
                 let led_state = pattern.step(gps, imu);
                 if self.motion.movement_timeout() {
-                    println!("PatternManager: Movement detected stationary so going to transition");
+                    println!("PatternManager: No movement detected so going to transition");
                     self.next_state = Some(PatternManagerState::Transition(led_state.clone(), 0));
                 }
                 led_state
