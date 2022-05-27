@@ -49,13 +49,7 @@ impl BeanTube {
             beans.push(Bean {
                 position: i as f32,
                 velocity: 0.0,
-                colour: {
-                    if i % 10 == 0 {
-                        [0, 0, 255]
-                    } else {
-                        [255, 255, 255]
-                    }
-                },
+                colour: [255, 255, 255],
             });
         }
         BeanTube { beans }

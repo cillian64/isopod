@@ -61,9 +61,10 @@ impl Pattern for Beans {
         // Get the acceleration vector either from the hardware, or if we're
         // doing software sim then fake it.  For hardware, invert the
         // acceleration vector because we want the force applied to the beans,
-        // not the acceleration they experience.
+        // not the acceleration they experience.  Also, scale up accelerometer
+        // acceleration a bit to make it more responsive.
         #[cfg(feature = "hardware")]
-        let gravity = imu.accel_vector().scale(-1.0);
+        let gravity = imu.accel_vector().scale(-5.0);
         #[cfg(not(feature = "hardware"))]
         let gravity = geometry::UnitVector3d::from_angles(self.a, self.b, self.c)
             .as_vector3d()
