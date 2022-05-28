@@ -203,6 +203,19 @@ impl BeanTube {
             None => [0, 0, 0],
         }
     }
+
+    /// Return true if all the beans are stacked at one end, false otherwise
+    #[allow(unused)]
+    pub fn is_stacked(&self) -> bool {
+        // Bean 0 sits at 0.0, bean 1 at 1.0, etc.
+        let stacked_left = self.beans.last().unwrap().position < (NUM_BEANS as f32) - 0.5;
+
+        // Bean N-1 sits at T-1 (where T is tube_len), N-2 sits at T-2, etc.
+        // So bean N-N sits at T-N
+        let stacked_right = self.beans[0].position > (TUBE_LEN - NUM_BEANS) as f32 - 0.5;
+
+        stacked_right || stacked_left
+    }
 }
 
 impl fmt::Display for BeanTube {

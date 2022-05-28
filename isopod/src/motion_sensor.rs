@@ -7,7 +7,7 @@ use crate::common_structs::ImuReadings;
 
 /// How long to wait after the last detected movement to exit the motion
 /// pattern, in frames
-const MOVEMENT_PATTERN_TIMEOUT: usize = 200;
+pub const MOVEMENT_PATTERN_TIMEOUT: usize = 200;
 
 /// How long to run stationary patterns before going into sleep mode, in
 /// frames
@@ -105,6 +105,7 @@ impl MotionSensor {
     }
 
     /// Has it been long enough since movement that the movement pattern should end
+    #[allow(unused)]
     pub fn movement_timeout(&self) -> bool {
         self.samples_since_last_movement > MOVEMENT_PATTERN_TIMEOUT
     }

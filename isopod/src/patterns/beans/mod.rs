@@ -35,16 +35,15 @@ pub struct Beans {
 
 impl Beans {
     pub const NAME: &'static str = "beans";
-}
 
-impl Pattern for Beans {
-    fn new() -> Box<dyn Pattern> {
+    /// Make a new Beans pattern object directly, not using the Pattern trait wrapper
+    pub fn new_direct() -> Beans {
         let mut bean_tubes = vec![];
         for _ in 0..(SPINES / 2) {
             bean_tubes.push(BeanTube::new());
         }
 
-        Box::new(Self {
+        Self {
             leds: LedUpdate::default(),
             #[cfg(not(feature = "hardware"))]
             a: 0.0,
@@ -53,7 +52,18 @@ impl Pattern for Beans {
             #[cfg(not(feature = "hardware"))]
             c: 0.0,
             bean_tubes,
-        })
+        }
+    }
+
+    /// Are all of our bean tubes stacked at one end or the other
+    pub fn all_stacked(&self) -> bool {
+        self.bean_tubes.iter().all(|tube| tube.is_stacked())
+    }
+}
+
+impl Pattern for Beans {
+    fn new() -> Box<dyn Pattern> {
+        Box::new(Beans::new_direct())
     }
 
     #[allow(unused_variables)]

@@ -4,7 +4,7 @@
 
 use crate::common_structs::{GpsFix, ImuReadings, LedUpdate};
 use crate::motion_sensor::MotionSensor;
-use crate::patterns::{pattern_by_name, Pattern};
+use crate::patterns::{beans::Beans, pattern_by_name, Pattern};
 use crate::SETTINGS;
 
 /// State machine for the pattern manager.  Some of the states have an associated pattern
@@ -15,9 +15,11 @@ enum PatternManagerState {
     /// pattern currently selected.
     Stationary(Box<dyn Pattern>),
 
-    /// Currently in movement.  The value is the movement pattern (which will probably
-    /// always be the same one)
-    Movement(Box<dyn Pattern>),
+    /// Currently in movement.  The first value is the movement pattern.  We store the
+    /// movement pattern directly rather than as a Pattern trait so we can use some
+    /// extended methods (e.g. frames_since_last_change).  The second value is a count
+    /// of the number of consequtive frames where all bean-tubes have been stacked.
+    Movement(Beans, usize),
 
     /// Transitioning between patterns.  We don't use an external pattern in this state,
     /// we just mutate the final state left behind by whichever pattern was playing last.
@@ -120,9 +122,16 @@ impl PatternManager {
                 led_state
             }
 
-            PatternManagerState::Movement(pattern) => {
+            PatternManagerState::Movement(pattern, stacked_frames) => {
+                if pattern.all_stacked() {
+                    *stacked_frames += 1;
+                } else {
+                    *stacked_frames = 0;
+                }
+
                 let led_state = pattern.step(gps, imu);
-                if self.motion.movement_timeout() {
+
+                if *stacked_frames >= crate::motion_sensor::MOVEMENT_PATTERN_TIMEOUT - 1 {
                     println!("PatternManager: No movement detected so going to transition");
                     self.next_state = Some(PatternManagerState::Transition(led_state.clone(), 0));
                 }
@@ -147,8 +156,8 @@ impl PatternManager {
                         self.next_state = Some(PatternManagerState::Stationary(pattern));
                     } else if shock_detected || creep_detected {
                         println!("PatternManager: Transitioning to movement");
-                        let pattern = pattern_by_name("beans").unwrap()();
-                        self.next_state = Some(PatternManagerState::Movement(pattern));
+                        self.next_state =
+                            Some(PatternManagerState::Movement(Beans::new_direct(), 0));
                     } else {
                         println!("PatternManager: Transitioning to stationary");
                         let pattern =
