@@ -139,17 +139,20 @@ impl PatternManager {
             }
 
             PatternManagerState::Transition(led_state, frame_count) => {
-                // Fade out the LEDs a bit:
+                // Transition out by sliding towards the center
                 for spine in led_state.spines.iter_mut() {
-                    for led in spine.iter_mut() {
-                        led[0] = u8::max(3, led[0]) - 3;
-                        led[1] = u8::max(3, led[1]) - 3;
-                        led[2] = u8::max(3, led[2]) - 3;
+                    let mut led_iter = spine.iter_mut().peekable();
+                    while let Some(led) = led_iter.next() {
+                        *led = if let Some(next_led) = led_iter.peek() {
+                            **next_led
+                        } else {
+                            [0, 0, 0]
+                        };
                     }
                 }
 
                 // If we're at the end of the transition, then decide where to go next
-                if *frame_count == 119 {
+                if *frame_count == 60 {
                     if self.motion.sleep_timeout() {
                         println!("PatternManager: Transitioning to sleep");
                         let pattern = pattern_by_name("sleep").unwrap()();
