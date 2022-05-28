@@ -29,6 +29,9 @@ pub struct Beans {
     #[cfg(not(feature = "hardware"))]
     c: f32,
 
+    // Used to slide out beans from the centre at the start
+    start_timer: usize,
+
     // We have 6 bean tubes, one for each opposing pair of spines
     bean_tubes: Vec<BeanTube>,
 }
@@ -52,6 +55,7 @@ impl Beans {
             #[cfg(not(feature = "hardware"))]
             c: 0.0,
             bean_tubes,
+            start_timer: 0,
         }
     }
 
@@ -68,6 +72,25 @@ impl Pattern for Beans {
 
     #[allow(unused_variables)]
     fn step(&mut self, _gps: &Option<GpsFix>, imu: &ImuReadings) -> &LedUpdate {
+        // When we are in the start time, ignore everything and just render
+        // the beans coming out from the centre.  The length of the start time
+        // depends on the number of beans
+        if self.start_timer < (bean_sim::NUM_BEANS / 2) * 4 {
+            for spine in self.leds.spines.iter_mut() {
+                for (idx, led) in spine.iter_mut().enumerate() {
+                    *led = if idx <= self.start_timer / 4 {
+                        [255, 255, 255]
+                    } else {
+                        [0, 0, 0]
+                    };
+                }
+            }
+
+            self.start_timer += 1;
+            return &self.leds;
+        }
+
+
         // Get the acceleration vector either from the hardware, or if we're
         // doing software sim then fake it.  For hardware, invert the
         // acceleration vector because we want the force applied to the beans,

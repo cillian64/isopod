@@ -17,7 +17,7 @@ use std::fmt;
 const GRAVITY: f32 = 1.0;
 // TODO: Maybe have the tube length have some hidden slots where the core would be
 pub const TUBE_LEN: usize = 118;
-const NUM_BEANS: usize = 41;
+pub const NUM_BEANS: usize = 41;
 
 // The Pi can keep up something like 1000 physics steps per second.  At 60fps,
 // 10 steps/frame works out at 600 steps/sec which works well.
