@@ -45,9 +45,10 @@ pub struct BeanTube {
 impl BeanTube {
     pub fn new() -> Self {
         let mut beans = Vec::<Bean>::new();
+        let first_bean_pos = (TUBE_LEN as f32) / 2.0 - (NUM_BEANS as f32) / 2.0;
         for i in 0..NUM_BEANS {
             beans.push(Bean {
-                position: i as f32,
+                position: first_bean_pos + (i as f32),
                 velocity: 0.0,
                 colour: [255, 255, 255],
             });
