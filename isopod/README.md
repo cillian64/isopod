@@ -7,9 +7,13 @@ Normally the software is built to run on the raspberry pi hardware using the
 `build_and_remote_run.sh` script.  However for pattern development it's
 possible to run the software on a PC (with no sensor or GPS or LED access)
 and view the LED status using the web visualiser.  To run the software on
-a PC, run
+a PC, run, on linux:
 
 ```cargo run --target=x86_64-unknown-linux-gnu --no-default-features --bin isopod```
+
+Or on MacOS:
+
+```cargo run --target=x86_64-apple-darwin --no-default-features --bin isopod```
 
 Then open the [sim/sim.html](sim/sim.html) file in your browser.  The
 visualiser can be connected to either the actual raspberry pi or to the local
