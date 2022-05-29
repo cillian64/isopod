@@ -20,6 +20,7 @@ pub mod starfield;
 pub mod strip_test;
 pub mod test_blackout;
 pub mod zoom;
+pub mod wormholes;
 
 // Other stuff
 pub mod geometry;
@@ -112,6 +113,10 @@ lazy_static! {
         (
             sleep::Sleep::NAME,
             sleep::Sleep::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            wormholes::WormHoles::NAME,
+            wormholes::WormHoles::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }

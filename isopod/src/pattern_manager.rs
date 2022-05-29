@@ -198,8 +198,8 @@ fn select_stationary_pattern(imu_average: ImuReadings) -> Box<dyn Pattern> {
         (false, true, false) => pattern_by_name("colourfield"),
         (false, true, true) => pattern_by_name("glitch"),
         (true, false, false) => pattern_by_name("colour_wipes"),
-        // Currently we only have 5 unique patterns, so repeat some:
-        (true, false, true) => pattern_by_name("colourfield"),
+        (true, false, true) => pattern_by_name("wormholes"),
+        // Currently we only have 6 unique patterns, so repeat some:
         (true, true, false) => pattern_by_name("glitch"),
         (true, true, true) => pattern_by_name("colour_wipes"),
     };
