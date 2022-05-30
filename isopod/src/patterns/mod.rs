@@ -21,6 +21,7 @@ pub mod strip_test;
 pub mod test_blackout;
 pub mod zoom;
 pub mod wormholes;
+pub mod sparkles;
 
 // Other stuff
 pub mod geometry;
@@ -117,6 +118,10 @@ lazy_static! {
         (
             wormholes::WormHoles::NAME,
             wormholes::WormHoles::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            sparkles::Sparkles::NAME,
+            sparkles::Sparkles::new as fn() -> Box<dyn Pattern>
         ),
     ]);
 }

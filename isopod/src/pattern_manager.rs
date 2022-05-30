@@ -199,8 +199,8 @@ fn select_stationary_pattern(imu_average: ImuReadings) -> Box<dyn Pattern> {
         (false, true, true) => pattern_by_name("glitch"),
         (true, false, false) => pattern_by_name("colour_wipes"),
         (true, false, true) => pattern_by_name("wormholes"),
-        // Currently we only have 6 unique patterns, so repeat some:
-        (true, true, false) => pattern_by_name("glitch"),
+        (true, true, false) => pattern_by_name("sparkles"),
+        // Currently we only have 7 unique patterns, so repeat one:
         (true, true, true) => pattern_by_name("colour_wipes"),
     };
     // Instantiate the pattern. Should never be None assuming I can type.
