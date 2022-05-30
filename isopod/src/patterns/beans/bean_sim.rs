@@ -1,6 +1,7 @@
 //! This module defines the physics simulation used for the "beans" pattern.
 
 use std::fmt;
+use color_space::{Hsv, Rgb};
 
 /// New physics algorithm:
 /// - Each bean stores floating point position and velocity
@@ -24,6 +25,10 @@ pub const NUM_BEANS: usize = 41;
 const STEPS_PER_FRAME: usize = 10;
 const DT: f32 = 1.0 / (STEPS_PER_FRAME as f32);
 
+/// Change the colour of all the beans if they are non-stacked for this many
+/// frames in a row.
+const COLOUR_CHANGE_FRAMES: usize = 120;
+
 /// Represents a tube with some beans in it which can slide back and forth.
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Bean {
@@ -37,9 +42,23 @@ struct Bean {
     colour: [u8; 3],
 }
 
+fn random_colour() -> [u8; 3] {
+    let hue = rand::random::<f64>() * 360.0;
+    let saturation = 1.0;
+    let value = 1.0f64;
+
+    let hsv = Hsv::new(hue, saturation, value);
+    let rgb = Rgb::from(hsv);
+    [rgb.r as u8, rgb.g as u8, rgb.b as u8]
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct BeanTube {
     beans: Vec<Bean>,
+
+    /// How many frames in a row has this tube had beans not stacked at one
+    /// end or the other.
+    not_stacked_frames: usize,
 }
 
 impl BeanTube {
@@ -53,7 +72,10 @@ impl BeanTube {
                 colour: [255, 255, 255],
             });
         }
-        BeanTube { beans }
+        BeanTube {
+            beans,
+            not_stacked_frames: 0,
+        }
     }
 
     /// Check that:
@@ -94,6 +116,26 @@ impl BeanTube {
     pub fn step(&mut self, acceleration: f32) {
         for _ in 0..STEPS_PER_FRAME {
             self.sub_step(acceleration / 100.0);
+        }
+
+        if self.is_stacked() {
+            self.not_stacked_frames = 0;
+        } else {
+            self.not_stacked_frames += 1;
+        }
+
+        if self.not_stacked_frames == COLOUR_CHANGE_FRAMES {
+            self.not_stacked_frames = 0;
+            self.change_bean_colours();
+        }
+    }
+
+    fn change_bean_colours(&mut self) {
+        // Choose a new random colour
+        let colour = random_colour();
+
+        for bean in self.beans.iter_mut() {
+            bean.colour = colour;
         }
     }
 
