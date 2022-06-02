@@ -1,0 +1,19 @@
+# systemd service file for isopod
+# =======================
+
+[Unit]
+Description=ISOPOD
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/dwt27/git/isopod_electronics/isopod
+ExecStart=/home/dwt27/git/isopod_electronics/isopod/isopod
+Restart=always
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+
+[Install]
+WantedBy=multi-user.target
