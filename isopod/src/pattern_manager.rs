@@ -201,7 +201,7 @@ impl PatternManager {
             PatternManagerState::Jukebox(pattern, frames_in_current) => {
                 let led_state = pattern.step(gps, imu);
 
-                if *frames_in_current > 600 {
+                if *frames_in_current > 3600 {
                     // Enough time in the current pattern, move to the next one
                     self.next_state = Some(PatternManagerState::JukeboxTransition(led_state.clone(), 0));
                 } else {
