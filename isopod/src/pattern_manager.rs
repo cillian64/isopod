@@ -6,6 +6,7 @@ use crate::common_structs::{GpsFix, ImuReadings, LedUpdate};
 use crate::motion_sensor::MotionSensor;
 use crate::patterns::{beans::Beans, pattern_by_name, Pattern, JUKEBOX};
 use crate::SETTINGS;
+use rand::Rng;
 
 /// State machine for the pattern manager.  Some of the states have an associated pattern
 /// which is the one currently selected for playback.  The pattern can't change without
@@ -37,9 +38,13 @@ enum PatternManagerState {
 
     /// Similar to Static, but cycles through all the patterns (except beans) on a
     /// fixed timer and ignores movement.  The first value is the current pattern,
-    /// the second is a numerical pointer into the pattern list, the third is the
-    /// number of frames spent in the current pattern.
-    Jukebox(Box<dyn Pattern>, usize, usize),
+    /// the second is the number of frames spent in the current pattern.
+    Jukebox(Box<dyn Pattern>, usize),
+
+    /// Transition between jukebox patterns.  Values are:
+    /// * The LEDs in the final frame of the pattern before transition
+    /// * Frame count in the transition
+    JukeboxTransition(LedUpdate, usize)
 }
 
 /// Decides which patterns to play back and does transitions between them.
@@ -80,7 +85,7 @@ impl PatternManager {
                     Self {
                         state: {
                             let pattern = JUKEBOX[0]();
-                            PatternManagerState::Jukebox(pattern, 0, 0)
+                            PatternManagerState::Jukebox(pattern, 0)
                         },
                         ..PatternManager::default()
                     }
@@ -193,17 +198,42 @@ impl PatternManager {
 
             PatternManagerState::Static(pattern) => pattern.step(gps, imu),
 
-            PatternManagerState::Jukebox(pattern, pattern_index, frames_in_current) => {
+            PatternManagerState::Jukebox(pattern, frames_in_current) => {
                 let led_state = pattern.step(gps, imu);
 
                 if *frames_in_current > 600 {
-                    // Enough time in the current pattern, select the next one
-                    let pattern_index = (*pattern_index + 1) % JUKEBOX.len();
-                    let next_pattern = JUKEBOX[pattern_index]();
-                    self.next_state = Some(PatternManagerState::Jukebox(next_pattern, pattern_index, 0));
+                    // Enough time in the current pattern, move to the next one
+                    self.next_state = Some(PatternManagerState::JukeboxTransition(led_state.clone(), 0));
                 } else {
                     *frames_in_current += 1;
                 }
+
+                led_state
+            }
+
+            PatternManagerState::JukeboxTransition(led_state, frame_count) => {
+                // Transition out by sliding towards the center
+                for spine in led_state.spines.iter_mut() {
+                    let mut led_iter = spine.iter_mut().peekable();
+                    while let Some(led) = led_iter.next() {
+                        *led = if let Some(next_led) = led_iter.peek() {
+                            **next_led
+                        } else {
+                            [0, 0, 0]
+                        };
+                    }
+                }
+
+                // If we're at the end of the transition, then decide where to go next
+                if *frame_count == 60 {
+                    let mut rng = rand::thread_rng();
+                    let next_pattern_idx: usize = rng.gen_range(0..JUKEBOX.len());
+                    let next_pattern = JUKEBOX[next_pattern_idx]();
+                    println!("Jukebox: transitioning to {}", next_pattern.get_name());
+                    self.next_state = Some(PatternManagerState::Jukebox(next_pattern, 0));
+                }
+
+                *frame_count += 1;
 
                 led_state
             }
