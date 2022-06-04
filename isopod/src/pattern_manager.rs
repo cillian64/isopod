@@ -4,7 +4,7 @@
 
 use crate::common_structs::{GpsFix, ImuReadings, LedUpdate};
 use crate::motion_sensor::MotionSensor;
-use crate::patterns::{beans::Beans, pattern_by_name, Pattern};
+use crate::patterns::{beans::Beans, pattern_by_name, Pattern, JUKEBOX};
 use crate::SETTINGS;
 
 /// State machine for the pattern manager.  Some of the states have an associated pattern
@@ -34,6 +34,12 @@ enum PatternManagerState {
     /// never be transitioned to.  The value is the static pattern which we will
     /// play back forever.
     Static(Box<dyn Pattern>),
+
+    /// Similar to Static, but cycles through all the patterns (except beans) on a
+    /// fixed timer and ignores movement.  The first value is the current pattern,
+    /// the second is a numerical pointer into the pattern list, the third is the
+    /// number of frames spent in the current pattern.
+    Jukebox(Box<dyn Pattern>, usize, usize),
 }
 
 /// Decides which patterns to play back and does transitions between them.
@@ -69,13 +75,24 @@ impl PatternManager {
             // If the user has selected a static pattern, then select the static_pattern
             // state which will persist forever.
             Ok(desired_pattern) => {
-                println!("Loading static pattern {}", &desired_pattern);
-                let pattern = pattern_by_name(&desired_pattern)
-                    .unwrap_or_else(|| panic!("Unknown pattern {}", &desired_pattern))(
-                );
-                Self {
-                    state: PatternManagerState::Static(pattern),
-                    ..PatternManager::default()
+                if desired_pattern == "jukebox" {
+                    println!("Loading jukebox mode.");
+                    Self {
+                        state: {
+                            let pattern = JUKEBOX[0]();
+                            PatternManagerState::Jukebox(pattern, 0, 0)
+                        },
+                        ..PatternManager::default()
+                    }
+                } else {
+                    println!("Loading static pattern {}", &desired_pattern);
+                    let pattern = pattern_by_name(&desired_pattern)
+                        .unwrap_or_else(|| panic!("Unknown pattern {}", &desired_pattern))(
+                    );
+                    Self {
+                        state: PatternManagerState::Static(pattern),
+                        ..PatternManager::default()
+                    }
                 }
             }
             // Otherwise, load into the transition pattern
@@ -175,6 +192,21 @@ impl PatternManager {
             }
 
             PatternManagerState::Static(pattern) => pattern.step(gps, imu),
+
+            PatternManagerState::Jukebox(pattern, pattern_index, frames_in_current) => {
+                let led_state = pattern.step(gps, imu);
+
+                if *frames_in_current > 600 {
+                    // Enough time in the current pattern, select the next one
+                    let pattern_index = (*pattern_index + 1) % JUKEBOX.len();
+                    let next_pattern = JUKEBOX[pattern_index]();
+                    self.next_state = Some(PatternManagerState::Jukebox(next_pattern, pattern_index, 0));
+                } else {
+                    *frames_in_current += 1;
+                }
+
+                led_state
+            }
         };
 
         led_state

@@ -93,6 +93,18 @@ lazy_static! {
             colourwipes::ColourWipes::NAME,
             colourwipes::ColourWipes::new as fn() -> Box<dyn Pattern>
         ),
+        (
+            sleep::Sleep::NAME,
+            sleep::Sleep::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            wormholes::WormHoles::NAME,
+            wormholes::WormHoles::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            sparkles::Sparkles::NAME,
+            sparkles::Sparkles::new as fn() -> Box<dyn Pattern>
+        ),
 
         // Test patterns, please ignore
         (
@@ -111,20 +123,19 @@ lazy_static! {
             id_spines::IdSpines::NAME,
             id_spines::IdSpines::new as fn() -> Box<dyn Pattern>
         ),
-        (
-            sleep::Sleep::NAME,
-            sleep::Sleep::new as fn() -> Box<dyn Pattern>
-        ),
-        (
-            wormholes::WormHoles::NAME,
-            wormholes::WormHoles::new as fn() -> Box<dyn Pattern>
-        ),
-        (
-            sparkles::Sparkles::NAME,
-            sparkles::Sparkles::new as fn() -> Box<dyn Pattern>
-        ),
     ]);
 }
+
+pub const JUKEBOX: [fn() -> Box<dyn Pattern>; 8] = [
+    zoom::Zoom::new as fn() -> Box<dyn Pattern>,
+    glitch::Glitch::new as fn() -> Box<dyn Pattern>,
+    starfield::Starfield::new as fn() -> Box<dyn Pattern>,
+    colourfield::Colourfield::new as fn() -> Box<dyn Pattern>,
+    colourwipes::ColourWipes::new as fn() -> Box<dyn Pattern>,
+    wormholes::WormHoles::new as fn() -> Box<dyn Pattern>,
+    sparkles::Sparkles::new as fn() -> Box<dyn Pattern>,
+    sleep::Sleep::new as fn() -> Box<dyn Pattern>,
+];
 
 /// Get the constructor for a pattern from its name
 pub fn pattern_by_name(name: &str) -> Option<fn() -> Box<dyn Pattern>> {
