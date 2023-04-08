@@ -29,10 +29,10 @@ led_spine_mapping = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 # Config items specific to rainbow swirl:
 
-# Larger values will make the pattern more radially compressed, smaller more
-# radially sparse.
+# Dense sparkly slow pattern:
 rainbow_swirl_radial_smear = 10.0
-# Larger values will make the pattern shift more with angle, smaller will make
-# it shift less.
-rainbow_swirl_rotary_smear = 0.5
-rainbow_swirl_speed = -10.0
+rainbow_swirl_speed = -6.0
+
+# Big smooth swirly
+# rainbow_swirl_radial_smear = 1.5
+# rainbow_swirl_speed = -3.0
