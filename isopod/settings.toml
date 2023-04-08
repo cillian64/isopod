@@ -3,7 +3,7 @@ fps = 60
 
 # Should the websocket server be abled.  Adds about 30% of one core worth of
 # CPU load.
-ws_server = true
+ws_server = false
 
 # Run start-up tests when starting the app.  Will hang if there is no GPS
 # signal.
@@ -11,10 +11,10 @@ do_startup_tests = false
 
 # How often to report to the backend server, in seconds.  Set to 0 to disable
 # reporting.
-reporter_interval = 5
+reporter_interval = 60
 
 # Display a single static pattern
-static_pattern = "wormholes"
+static_pattern = "rainbow_swirl"
 
 # LED strip brightness, 0-255
 led_brightness = 128
@@ -24,4 +24,15 @@ led_brightness = 128
 # LED connectors on the PCB (cables numbered 1-12) while value corresponds to
 # which icosahedron position is connected to that connector. Icosahedron
 # positions are numbered 1-12 inclusive (i.e. 1-based).
-led_spine_mapping = [4, 3, 11, 1, 12, 2, 8, 7, 5, 9, 6, 10]
+#led_spine_mapping = [4, 3, 11, 1, 12, 2, 8, 7, 5, 9, 6, 10]
+led_spine_mapping = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+# Config items specific to rainbow swirl:
+
+# Larger values will make the pattern more radially compressed, smaller more
+# radially sparse.
+rainbow_swirl_radial_smear = 10.0
+# Larger values will make the pattern shift more with angle, smaller will make
+# it shift less.
+rainbow_swirl_rotary_smear = 0.5
+rainbow_swirl_speed = -10.0

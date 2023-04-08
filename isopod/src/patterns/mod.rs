@@ -13,15 +13,16 @@ pub mod colourfield;
 pub mod colourwipes;
 pub mod glitch;
 pub mod id_spines;
+pub mod rainbow_swirl;
 pub mod searchlight;
 pub mod shock;
 pub mod sleep;
+pub mod sparkles;
 pub mod starfield;
 pub mod strip_test;
 pub mod test_blackout;
-pub mod zoom;
 pub mod wormholes;
-pub mod sparkles;
+pub mod zoom;
 
 // Other stuff
 pub mod geometry;
@@ -104,6 +105,11 @@ lazy_static! {
         (
             sparkles::Sparkles::NAME,
             sparkles::Sparkles::new as fn() -> Box<dyn Pattern>
+        ),
+
+        (
+            rainbow_swirl::RainbowSwirl::NAME,
+            rainbow_swirl::RainbowSwirl::new as fn() -> Box<dyn Pattern>
         ),
 
         // Test patterns, please ignore
