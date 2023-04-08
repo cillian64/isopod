@@ -16,7 +16,7 @@ use rand::Rng;
 const GLITCH_LEN: f32 = 0.6;
 
 /// Average length of gaps between glitching periods, in seconds
-const GAP_LEN: f32 = 0.8;
+const GAP_LEN: f32 = 0.0;
 
 /// Number of frames per second.  Changing this doesn't actually affect the
 /// FPS, that is controlled by frame-skipping, but this value is used to
