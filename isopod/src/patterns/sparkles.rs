@@ -14,7 +14,6 @@ const PROB_ON: f32 = 0.01;
 /// Divide the frame rate by this number
 const FRAME_SKIP: usize = 3;
 
-
 pub struct Sparkles {
     leds: LedUpdate,
     rng: rand::rngs::ThreadRng,

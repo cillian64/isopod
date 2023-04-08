@@ -44,7 +44,7 @@ enum PatternManagerState {
     /// Transition between jukebox patterns.  Values are:
     /// * The LEDs in the final frame of the pattern before transition
     /// * Frame count in the transition
-    JukeboxTransition(LedUpdate, usize)
+    JukeboxTransition(LedUpdate, usize),
 }
 
 /// Decides which patterns to play back and does transitions between them.

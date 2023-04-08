@@ -1,7 +1,7 @@
 //! This module defines the physics simulation used for the "beans" pattern.
 
-use std::fmt;
 use color_space::{Hsv, Rgb};
+use std::fmt;
 
 /// New physics algorithm:
 /// - Each bean stores floating point position and velocity

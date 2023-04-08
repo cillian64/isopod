@@ -6,8 +6,8 @@ use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
 
-use rand::{Rng, rngs::ThreadRng};
 use color_space::{Hsv, Rgb};
+use rand::{rngs::ThreadRng, Rng};
 
 const WORMHOLE_MAX_LEN: i32 = 10;
 const WORMHOLE_MIN_LEN: i32 = 5;
@@ -30,7 +30,6 @@ fn random_colour(rng: &mut ThreadRng) -> [u8; 3] {
 
 struct WormHole {
     // Use i32 all over the place to avoid problems with underflows
-
     /// Which spine is this wormhole on
     spine: usize,
 
@@ -84,22 +83,23 @@ impl WormHole {
                 fractional_head_pos: 0,
             };
 
-            if existing_wormholes.iter().any(|existing| existing.overlaps(&candidate)) {
+            if existing_wormholes
+                .iter()
+                .any(|existing| existing.overlaps(&candidate))
+            {
                 // Candidate overlaps, try again
                 continue;
             }
 
             // Candidate looks good
-            return Some(candidate)
+            return Some(candidate);
         }
         // No candidate found after 10 attempts, ugh
         None
     }
 
     fn overlaps(&self, other: &WormHole) -> bool {
-        self.spine == other.spine &&
-            self.end >= other.start &&
-            other.end >= self.start
+        self.spine == other.spine && self.end >= other.start && other.end >= self.start
     }
 
     /// Apply a time-step to this wormhole
@@ -145,7 +145,8 @@ impl WormHole {
                 } else if idx > self.worm_head_pos {
                     // In the head fade region
                     // Fade proportion from 0.0 to 1.0
-                    let fade_proportion = (WORM_HEAD_FADE_LEN - (idx - self.worm_head_pos)) as f32 / WORM_HEAD_FADE_LEN as f32;
+                    let fade_proportion = (WORM_HEAD_FADE_LEN - (idx - self.worm_head_pos)) as f32
+                        / WORM_HEAD_FADE_LEN as f32;
                     Self::fade_colour([255, 255, 255], fade_proportion)
                 } else if idx == self.worm_head_pos {
                     // Worm head is white
@@ -156,7 +157,9 @@ impl WormHole {
                 } else if idx >= self.worm_head_pos - WORM_LEN - WORM_TAIL_FADE_LEN {
                     // In the tail fade region
                     // Fade proportion from 0.0 to 1.0
-                    let fade_proportion = (idx - (self.worm_head_pos - WORM_LEN - WORM_TAIL_FADE_LEN)) as f32 / WORM_TAIL_FADE_LEN as f32;
+                    let fade_proportion =
+                        (idx - (self.worm_head_pos - WORM_LEN - WORM_TAIL_FADE_LEN)) as f32
+                            / WORM_TAIL_FADE_LEN as f32;
                     Self::fade_colour(self.colour, fade_proportion)
                 } else {
                     // Behind worm body
@@ -170,7 +173,8 @@ impl WormHole {
                 } else if idx < self.worm_head_pos {
                     // In the head fade region
                     // Fade proportion from 0.0 to 1.0
-                    let fade_proportion = (WORM_HEAD_FADE_LEN - (self.worm_head_pos - idx)) as f32 / WORM_HEAD_FADE_LEN as f32;
+                    let fade_proportion = (WORM_HEAD_FADE_LEN - (self.worm_head_pos - idx)) as f32
+                        / WORM_HEAD_FADE_LEN as f32;
                     Self::fade_colour([255, 255, 255], fade_proportion)
                 } else if idx == self.worm_head_pos {
                     // Worm head is white
@@ -181,7 +185,9 @@ impl WormHole {
                 } else if idx <= self.worm_head_pos + WORM_LEN + WORM_TAIL_FADE_LEN {
                     // In the tail fade region
                     // Fade proportion from 0.0 to 1.0
-                    let fade_proportion = ((self.worm_head_pos + WORM_LEN + WORM_TAIL_FADE_LEN) - idx) as f32 / WORM_TAIL_FADE_LEN as f32;
+                    let fade_proportion = ((self.worm_head_pos + WORM_LEN + WORM_TAIL_FADE_LEN)
+                        - idx) as f32
+                        / WORM_TAIL_FADE_LEN as f32;
                     Self::fade_colour(self.colour, fade_proportion)
                 } else {
                     // Behind worm body
@@ -198,7 +204,6 @@ impl WormHole {
         } else {
             self.worm_head_pos < self.start - WORM_LEN - WORM_HEAD_FADE_LEN - WORM_TAIL_FADE_LEN
         }
-
     }
 }
 

@@ -90,7 +90,6 @@ impl Pattern for Beans {
             return &self.leds;
         }
 
-
         // Get the acceleration vector either from the hardware, or if we're
         // doing software sim then fake it.  For hardware, invert the
         // acceleration vector because we want the force applied to the beans,
