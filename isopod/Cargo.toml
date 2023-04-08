@@ -40,3 +40,6 @@ static_assertions = "1.1.0"
 default = ["hardware"]
 hardware = ["dep:rppal", "dep:icm20948", "dep:linux-embedded-hal", "dep:nmea",
             "dep:rs_ws281x", "dep:max1720x"]
+
+[profile.dev]
+lto = "off"
