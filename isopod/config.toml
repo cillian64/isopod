@@ -1,3 +1,9 @@
 [build]
 target = "armv7-unknown-linux-gnueabihf"
 rustflags = ["-C lto=off"]
+
+[profile.release]
+lto = "off"
+
+[profile.debug]
+lto = "off"
