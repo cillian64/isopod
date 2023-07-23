@@ -14,6 +14,7 @@ pub mod colourwipes;
 pub mod glitch;
 pub mod id_spines;
 pub mod rainbow_swirl;
+pub mod blue_swirl;
 pub mod searchlight;
 pub mod shock;
 pub mod sleep;
@@ -23,6 +24,7 @@ pub mod strip_test;
 pub mod test_blackout;
 pub mod wormholes;
 pub mod zoom;
+pub mod rave;
 
 // Other stuff
 pub mod geometry;
@@ -106,10 +108,17 @@ lazy_static! {
             sparkles::Sparkles::NAME,
             sparkles::Sparkles::new as fn() -> Box<dyn Pattern>
         ),
-
         (
             rainbow_swirl::RainbowSwirl::NAME,
             rainbow_swirl::RainbowSwirl::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            blue_swirl::BlueSwirl::NAME,
+            blue_swirl::BlueSwirl::new as fn() -> Box<dyn Pattern>
+        ),
+        (
+            rave::Rave::NAME,
+            rave::Rave::new as fn() -> Box<dyn Pattern>
         ),
 
         // Test patterns, please ignore
@@ -132,14 +141,16 @@ lazy_static! {
     ]);
 }
 
-pub const JUKEBOX: [fn() -> Box<dyn Pattern>; 8] = [
+pub const JUKEBOX: [fn() -> Box<dyn Pattern>; 10] = [
     zoom::Zoom::new as fn() -> Box<dyn Pattern>,
     glitch::Glitch::new as fn() -> Box<dyn Pattern>,
     starfield::Starfield::new as fn() -> Box<dyn Pattern>,
     colourfield::Colourfield::new as fn() -> Box<dyn Pattern>,
     colourwipes::ColourWipes::new as fn() -> Box<dyn Pattern>,
     wormholes::WormHoles::new as fn() -> Box<dyn Pattern>,
-    sparkles::Sparkles::new as fn() -> Box<dyn Pattern>,
+    rainbow_swirl::RainbowSwirl::new as fn() -> Box<dyn Pattern>,
+    blue_swirl::BlueSwirl::new as fn() -> Box<dyn Pattern>,
+    rave::Rave::new as fn() -> Box<dyn Pattern>,
     sleep::Sleep::new as fn() -> Box<dyn Pattern>,
 ];
 
