@@ -9,6 +9,7 @@ use rand::Rng;
 pub struct Starfield {
     leds: LedUpdate,
     rng: rand::rngs::ThreadRng,
+    step: u64,
 }
 
 impl Starfield {
@@ -20,6 +21,7 @@ impl Pattern for Starfield {
         Box::new(Self {
             leds: LedUpdate::default(),
             rng: rand::thread_rng(),
+            step: 0,
         })
     }
 
@@ -29,19 +31,23 @@ impl Pattern for Starfield {
         // distribution of brightness.  Based on the basic "rainfall" pattern
         // used in Bitstream.
 
-        for spine in self.leds.spines.iter_mut() {
-            // First, shift all the LEDs on this spine down by one
-            for led in (1..spine.len()).rev() {
-                spine[led] = spine[led - 1];
-            }
+        self.step += 1;
 
-            // Now decide whether to create a new star at the root
-            spine[0] = if self.rng.gen::<f32>() < 0.083 {
-                let intensity: u8 = self.rng.gen_range(85..=255);
-                [intensity, intensity, intensity]
-            } else {
-                [0, 0, 0]
-            };
+        if self.step % 2 == 0 {
+            for spine in self.leds.spines.iter_mut() {
+                // First, shift all the LEDs on this spine down by one
+                for led in (1..spine.len()).rev() {
+                    spine[led] = spine[led - 1];
+                }
+
+                // Now decide whether to create a new star at the root
+                spine[0] = if self.rng.gen::<f32>() < 0.083 {
+                    let intensity: u8 = self.rng.gen_range(85..=255);
+                    [intensity, intensity, intensity]
+                } else {
+                    [0, 0, 0]
+                };
+            }
         }
 
         &self.leds
