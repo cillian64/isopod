@@ -12,10 +12,6 @@ use crate::SETTINGS;
 use crate::{LEDS_PER_SPINE, SPINES};
 
 use color_space::{Hsv, Rgb};
-/// Number of frames per second.  Changing this doesn't actually affect the
-/// FPS, that is controlled by frame-skipping, but this value is used to
-/// convert average-time-length values into per-frame probabilities
-const FPS: f32 = 60.0;
 
 pub struct RainbowSwirl {
     leds: LedUpdate,

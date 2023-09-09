@@ -6,15 +6,10 @@ use crate::common_structs::ImuReadings;
 use crate::common_structs::LedUpdate;
 use crate::patterns::Pattern;
 use crate::SETTINGS;
-use crate::{LEDS_PER_SPINE, SPINES};
 
 use rand::Rng;
 
 use color_space::{Hsv, Rgb};
-/// Number of frames per second.  Changing this doesn't actually affect the
-/// FPS, that is controlled by frame-skipping, but this value is used to
-/// convert average-time-length values into per-frame probabilities
-const FPS: f64 = 60.0;
 
 pub struct Rave {
     leds: LedUpdate,
