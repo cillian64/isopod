@@ -60,6 +60,7 @@ impl Beans {
     }
 
     /// Are all of our bean tubes stacked at one end or the other
+    #[allow(unused)]
     pub fn all_stacked(&self) -> bool {
         self.bean_tubes.iter().all(|tube| tube.is_stacked())
     }

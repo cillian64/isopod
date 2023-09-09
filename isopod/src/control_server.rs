@@ -7,22 +7,36 @@ pub struct Controls {
     // Soft brightness as a proportion of the value in settings.toml.  Expected
     // to be 0-100 inclusive, taken as a %
     pub brightness: u8,
+
+    // Current pattern name
+    pub pattern: String,
 }
 
 impl Default for Controls {
     fn default() -> Self {
         Self {
             brightness: 100,
+            pattern: "colour_wipes".to_owned(),
         }
     }
 }
 
 lazy_static! {
     pub static ref CONTROLS: RwLock<Controls> = RwLock::new(Controls::default());
+    static ref ALLOWED_PATTERNS: [String; 7] = [
+        "colourfield".to_owned(),
+        "colour_wipes".to_owned(),
+        "glitch".to_owned(),
+        "sleep".to_owned(),
+        "sparkles".to_owned(),
+        "starfield".to_owned(),
+        "wormholes".to_owned(),
+    ];
 }
 
 
 async fn control_server() {
+
     let index = warp::get()
         .and(warp::path::end())
         .and(warp::fs::file("./index.html"));
@@ -42,13 +56,24 @@ async fn control_server() {
         .map(|p: HashMap<String, String>| {
             eprintln!("Got query strings: {:?}", p);
 
+            let mut controls = CONTROLS.write().unwrap();
+
             if let Some(x) = p.get("brightness") {
                 if let Ok(x) = x.parse::<u8>() {
                     if x <= 100 {
-                        CONTROLS.write().unwrap().brightness = x;
+                        controls.brightness = x;
                     }
                 }
             }
+
+            if let Some(x) = p.get("pattern") {
+                if ALLOWED_PATTERNS.contains(x) {
+                    controls.pattern = x.clone();
+                }
+            }
+
+            // Ensure this drops ASAP
+            drop(controls);
 
             warp::reply()
         });

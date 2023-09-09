@@ -141,6 +141,7 @@ lazy_static! {
     ]);
 }
 
+#[allow(unused)]
 pub const JUKEBOX: [fn() -> Box<dyn Pattern>; 10] = [
     zoom::Zoom::new as fn() -> Box<dyn Pattern>,
     glitch::Glitch::new as fn() -> Box<dyn Pattern>,

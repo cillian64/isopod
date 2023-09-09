@@ -13,11 +13,6 @@ do_startup_tests = false
 # reporting.
 reporter_interval = 0
 
-# Display a single static pattern
-static_pattern = "colour_wipes"
-#static_pattern = "wormholes"
-#static_pattern = "rainbow_swirl"
-
 # LED strip brightness, 0-255
 # Note that this is the max brightness, settings sent from the control panel
 # are a percentage of this brightness.
