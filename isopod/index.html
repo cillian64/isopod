@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="bootstrap.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISOPOD</title>
+
+    <script type="text/javascript">
+
+function go(params) {
+    var http = new XMLHttpRequest();
+    http.open("POST", "/command", true);
+    http.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+    http.send(params);
+}
+
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col">
+
+          <div class="card text-center">
+            <div class="card-body">
+              <h3 class="card-title">ISOPOD</h5>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">BRIGHTNESS</h5>
+              <button type="button" class="btn btn-primary"
+                  onClick="go('brightness=0')">0%</button>
+              <button type="button" class="btn btn-primary"
+                  onClick="go('brightness=25')">25%</button>
+              <button type="button" class="btn btn-primary"
+                  onClick="go('brightness=50')">50%</button>
+              <button type="button" class="btn btn-primary"
+                  onClick="go('brightness=75')">75%</button>
+              <button type="button" class="btn btn-primary"
+                  onClick="go('brightness=100')">100%</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

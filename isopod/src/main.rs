@@ -28,7 +28,7 @@ mod patterns;
 #[cfg(feature = "hardware")]
 mod reporter;
 mod temperature;
-mod ws_server;
+mod control_server;
 #[cfg(not(feature = "hardware"))]
 use common_structs::ImuReadings;
 
@@ -85,12 +85,8 @@ fn main() -> Result<()> {
     i2cperiphs.clone().start_thread();
     gps.clone().start_thread();
     let mut reporter = reporter::Reporter::new();
-    let ws = if SETTINGS.get("ws_server")? {
-        Some(ws_server::WsServer::start_server())
-    } else {
-        println!("Websocket server disabled.");
-        None
-    };
+
+    control_server::start_server();
     println!("Worker threads started.");
 
     let mut pattern_manager = pattern_manager::PatternManager::new();
@@ -109,9 +105,6 @@ fn main() -> Result<()> {
         // Step pattern and update LEDs
         let led_state = pattern_manager.step(&gps_fix, &imu_readings);
         led.led_update(led_state)?;
-        if let Some(ref ws) = ws {
-            ws.led_update(led_state)?;
-        }
 
         // Send a report if necessary
         let now = time::Instant::now();
