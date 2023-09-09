@@ -2,6 +2,7 @@
 
 use crate::common_structs::LedUpdate;
 use crate::SETTINGS;
+use crate::control_server::CONTROLS;
 use crate::{LEDS_PER_SPINE, SPINES};
 use anyhow::{anyhow, Result};
 use rppal::gpio::Gpio;
@@ -190,7 +191,13 @@ impl Led {
             // data doesn't come through this module).
             if let Some(ref mut controller) = controller {
                 // Work out what if any power limiting scaling is needed
-                let power_scale = Self::get_power_limit_scaling(&led_update);
+                let mut power_scale = Self::get_power_limit_scaling(&led_update);
+
+                // Apply scaling from control panle
+                let brightness = CONTROLS.read().unwrap().brightness;
+                if brightness < 100 {
+                    power_scale = Some((brightness as f32) / 100.0);
+                }
 
                 let leds = controller.leds_mut(0);
                 // spine_hard represents a physical LED connector on the PCB

@@ -12,7 +12,7 @@ pub struct Controls {
 impl Default for Controls {
     fn default() -> Self {
         Self {
-            brightness: 0,
+            brightness: 100,
         }
     }
 }

@@ -19,7 +19,9 @@ static_pattern = "colour_wipes"
 #static_pattern = "rainbow_swirl"
 
 # LED strip brightness, 0-255
-led_brightness = 128
+# Note that this is the max brightness, settings sent from the control panel
+# are a percentage of this brightness.
+led_brightness = 156
 
 # This is the mapping between LED strip connectors on the PCB and physical LED
 # spine positions on the core icosahedron.  Position in the list corresponds
